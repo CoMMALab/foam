@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="scene" path="sihui/5dofarm.urdf">
+	<link name="origin"></link>
+	<link name="tabletop-internal-link"></link>
+	<link name="s0-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.08090000273138287" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.131264"></sphere>
+			</geometry>
+			<origin xyz="0.0 1e-06 0.12135300409707431" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="s1-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.08090000273138287" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.131264"></sphere>
+			</geometry>
+			<origin xyz="0.0 1e-06 0.12135300409707431" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="upper-link-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.25"></origin>
+			<geometry>
+				<cylinder radius="0.05000000074505806" length="0.5"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.229461"></sphere>
+			</geometry>
+			<origin xyz="3e-06 9e-06 0.250003" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="e-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.16180000546276574"></origin>
+			<geometry>
+				<cylinder radius="0.08090000273138287" length="0.3236000109255315"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.162812"></sphere>
+			</geometry>
+			<origin xyz="-1e-06 5e-06 0.16179800546276574" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="e-link-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.25"></origin>
+			<geometry>
+				<cylinder radius="0.05000000074505806" length="0.5"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.229461"></sphere>
+			</geometry>
+			<origin xyz="3e-06 9e-06 0.250003" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="w0-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.05000000074505806" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.118127"></sphere>
+			</geometry>
+			<origin xyz="-3e-06 5e-06 0.1213520040970743" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="w1-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.05000000074505806" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.118127"></sphere>
+			</geometry>
+			<origin xyz="-3e-06 5e-06 0.1213520040970743" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="w2-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.05000000074505806" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.118127"></sphere>
+			</geometry>
+			<origin xyz="-3e-06 5e-06 0.1213520040970743" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="end-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.1213500040970743"></origin>
+			<geometry>
+				<cylinder radius="0.015000000819563875" length="0.2427000081941486"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.110048"></sphere>
+			</geometry>
+			<origin xyz="-2e-06 0.0 0.1213490040970743" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<link name="end-link-internal-link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 0.009999999776482582"></origin>
+			<geometry>
+				<cylinder radius="0.07999999821186066" length="0.019999999552965164"></cylinder>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.072563"></sphere>
+			</geometry>
+			<origin xyz="0.0 -2e-06 0.010000999776482581" rpy="0 0 0"></origin>
+		</collision>
+	</link>
+	<joint name="tabletop" type="fixed">
+		<parent link="origin"></parent>
+		<child link="tabletop-internal-link"></child>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"></origin>
+	</joint>
+	<joint name="s0" type="revolute">
+		<parent link="tabletop-internal-link"></parent>
+		<child link="s0-internal-link"></child>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0 -0.5 0.0"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="1.0" lower="-3.14159" upper="3.14159" velocity="1.0"></limit>
+	</joint>
+	<joint name="s1" type="revolute">
+		<parent link="s0-internal-link"></parent>
+		<child link="s1-internal-link"></child>
+		<origin rpy="0.0 1.5707499980926187 0.0" xyz="0.0 0.0 0.16180000546276574"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="1.0" lower="-3.14159" upper="3.14159" velocity="1.0"></limit>
+	</joint>
+	<joint name="upper-link" type="fixed">
+		<parent link="s1-internal-link"></parent>
+		<child link="upper-link-internal-link"></child>
+		<origin rpy="0.0 -1.5707499980926187 0.0" xyz="0.0 0.0 0.16180000546276574"></origin>
+	</joint>
+	<joint name="e" type="revolute">
+		<parent link="upper-link-internal-link"></parent>
+		<child link="e-internal-link"></child>
+		<origin rpy="0.0 -1.5707499980926187 0.0" xyz="0.08090000273138287 0.0 0.5"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="1.0" lower="-3.14159" upper="3.14159" velocity="1.0"></limit>
+	</joint>
+	<joint name="e-link" type="fixed">
+		<parent link="e-internal-link"></parent>
+		<child link="e-link-internal-link"></child>
+		<origin rpy="0.0 1.5707499980926187 0.0" xyz="0.0 0.0 0.2427000081941486"></origin>
+	</joint>
+	<joint name="w0" type="revolute">
+		<parent link="e-link-internal-link"></parent>
+		<child link="w0-internal-link"></child>
+		<origin rpy="0.0 -1.5707499980926187 0.0" xyz="0.16180000546276574 0.0 0.5"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="1.0" lower="-3.14159" upper="3.14159" velocity="1.0"></limit>
+	</joint>
+	<joint name="w1" type="revolute">
+		<parent link="w0-internal-link"></parent>
+		<child link="w1-internal-link"></child>
+		<origin rpy="0.0 -1.5707499980926187 0.0" xyz="0.16180000546276574 0.0 0.0"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="1.0" lower="-3.14159" upper="3.14159" velocity="1.0"></limit>
+	</joint>
+	<joint name="w2" type="fixed">
+		<parent link="w1-internal-link"></parent>
+		<child link="w2-internal-link"></child>
+		<origin rpy="0.0 1.5707499980926187 0.0" xyz="-0.1213500040970743 0.0 0.0"></origin>
+	</joint>
+	<joint name="end" type="fixed">
+		<parent link="w2-internal-link"></parent>
+		<child link="end-internal-link"></child>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.08090000273138287"></origin>
+	</joint>
+	<joint name="end-link" type="fixed">
+		<parent link="end-internal-link"></parent>
+		<child link="end-link-internal-link"></child>
+		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"></origin>
+	</joint>
+</robot>
