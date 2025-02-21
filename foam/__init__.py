@@ -33,6 +33,8 @@ def spherize_mesh(
     else:
         loaded_mesh = mesh
 
+    print(loaded_mesh)
+
     loaded_mesh = loaded_mesh.copy()
 
     # Normalize center

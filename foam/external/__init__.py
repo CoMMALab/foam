@@ -60,6 +60,7 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str],method) -> list[Sph
         run(command + [str(input_path)], stdout = DEVNULL)
 
     if not output_file.exists():
+        print(mesh)
         raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
 
     low_bounds, high_bounds = mesh.bounds
@@ -126,7 +127,7 @@ def compute_spheres(
         MAKE_TREE_PATH = MAKE_TREE_OCTREE_PATH
     else:
         MAKE_TREE_PATH = MAKE_TREE_MEDIAL_PATH  # Default to medial if unspecified
-    
+
     # command = [
     #     str(MAKE_TREE_PATH),
     #     '-nopause',

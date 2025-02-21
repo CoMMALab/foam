@@ -87,8 +87,8 @@ def main(
     end_time = time.time()
 
     print(f"Generated spheres in {end_time - start_time:.6f} seconds")
-
-
+    total_spheres = sum(len(spherization) for spherization in spheres)
+    print(f"Total number of spheres: {total_spheres}")
 
 if __name__ == "__main__":
     Fire(main)

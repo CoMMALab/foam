@@ -7,6 +7,8 @@ from foam import *
 from trimesh.primitives import Sphere
 from trimesh.nsphere import minimum_nsphere
 
+import time
+
 def main(
         filename: str = "assets/panda/panda.urdf",
         output: str = "spherized.urdf",
@@ -37,6 +39,8 @@ def main(
         shrinkage: float = 1.,
         **kwargs: float
     ):
+
+    start_time = time.time()
 
     sh = SpherizationHelper(Path(database), threads)
 
@@ -137,6 +141,12 @@ def main(
 
     set_urdf_spheres(urdf, mesh_spheres | primitive_spheres)
     save_urdf(urdf, Path(output))
+
+    end_time = time.time()
+    print(f"Generated spheres in {end_time - start_time:.6f} seconds")
+    total_spheres = sum(len(spherization) for spherization in mesh_spheres.values()) + \
+                sum(len(spherization) for spherization in primitive_spheres.values())
+    print(f"Total number of spheres: {total_spheres}")
 
 
 if __name__ == "__main__":

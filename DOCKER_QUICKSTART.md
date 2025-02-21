@@ -49,6 +49,13 @@ To start and stop a container, run
 ```docker start foam```
 ```docker stop foam```
 
+### Step 6: Compile Libraries
+Run the following to compile submodules:
+```
+cd foam
+cmake -Bbuild -GNinja .
+cmake --build build/
+```
 
 For more details on display forwarding and other docker management commands, see the following:
 https://github.com/saiccoumar/PX4_Docker_Config
