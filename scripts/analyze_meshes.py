@@ -12,13 +12,11 @@ import queue
 import tqdm
 
 def ensure_output_directory(script_dir: Path) -> Path:
-    """Create outputs directory if it doesn't exist."""
     output_dir = script_dir / 'outputs'
     output_dir.mkdir(exist_ok=True)
     return output_dir
 
 def get_mesh_files(directory: str) -> List[Path]:
-    """Recursively get all mesh files (stl, dae, obj) in the given directory and its subdirectories."""
     valid_extensions = {'.stl', '.dae', '.obj'}
     directory_path = Path(directory)
     mesh_files = []
@@ -33,7 +31,6 @@ def get_mesh_files(directory: str) -> List[Path]:
     return mesh_files
 
 def get_triangle_count(mesh_path: Path) -> int:
-    """Get the number of triangles in a mesh file."""
     try:
         mesh = trimesh.load(str(mesh_path))
         return len(mesh.faces)
@@ -42,7 +39,6 @@ def get_triangle_count(mesh_path: Path) -> int:
         return -1
 
 def input_thread(user_input_queue):
-    """Thread function to monitor for user input"""
     while True:
         user_input = input()
         if user_input.strip() == "":
@@ -50,9 +46,8 @@ def input_thread(user_input_queue):
             break
 
 def process_mesh(mesh_path: Path, output_dir: Path) -> Optional[Tuple[str, float, int, int]]:
-    """Process a single mesh file and return its metrics."""
-    # print(f"\nProcessing {mesh_path}...")
-    # print("Press Enter at any time to skip this mesh...")
+    print(f"\nProcessing {mesh_path}...")
+    print("Press Enter at any time to skip this mesh...")
     
     # Get triangle count
     triangle_count = get_triangle_count(mesh_path)
