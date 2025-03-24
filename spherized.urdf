@@ -1,1152 +1,367 @@
 <?xml version="1.0" encoding="utf-8"?>
-<robot name="fetch" path="assets/fetch/fetch.urdf">
-	<link name="base_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="-0.0036 0.0 0.0014"></origin>
-			<mass value="70.1294"></mass>
-			<inertia ixx="1.225" ixy="0.0099" ixz="0.0062" iyy="1.2853" iyz="-0.0034" izz="0.987"></inertia>
-		</inertial>
+<robot name="ur10e_robot" path="ur_description/urdf/ur10e.urdf">
+	<transmission name="shoulder_pan_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="shoulder_pan_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="shoulder_pan_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<transmission name="shoulder_lift_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="shoulder_lift_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="shoulder_lift_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<transmission name="elbow_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="elbow_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="elbow_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<transmission name="wrist_1_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="wrist_1_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="wrist_1_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<transmission name="wrist_2_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="wrist_2_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="wrist_2_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<transmission name="wrist_3_trans">
+		<type>transmission_interface/SimpleTransmission</type>
+		<joint name="wrist_3_joint">
+			<hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+		</joint>
+		<actuator name="wrist_3_motor">
+			<mechanicalReduction>1</mechanicalReduction>
+		</actuator>
+	</transmission>
+	<link name="base_link"></link>
+	<link name="base_link_inertia">
 		<visual>
+			<origin rpy="0 0 3.141592653589793" xyz="0 0 0"></origin>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/base.dae"></mesh>
+			</geometry>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.107272"></sphere>
+			</geometry>
+			<origin xyz="6.441097259521497e-07 1.1639127731323243e-05 0.0496443499687567" rpy="0 0 0"></origin>
+		</collision>
+		<inertial>
+			<mass value="4.0"></mass>
 			<origin rpy="0 0 0" xyz="0 0 0"></origin>
+			<inertia ixx="0.0061063308908" ixy="0.0" ixz="0.0" iyy="0.0061063308908" iyz="0.0" izz="0.01125"></inertia>
+		</inertial>
+	</link>
+	<link name="shoulder_link">
+		<visual>
+			<origin rpy="0 0 3.141592653589793" xyz="0 0 0"></origin>
 			<geometry>
-				<mesh filename="package://meshes/base_link.dae"></mesh>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/shoulder.dae"></mesh>
 			</geometry>
-			<material name="">
-				<color rgba="0.356 0.361 0.376 1"></color>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
 			</material>
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.262509"></sphere>
+				<sphere radius="0.122019"></sphere>
 			</geometry>
-			<origin xyz="-0.08361067455464176 0.08169275676281239 0.18840366675703268" rpy="0 0 0"></origin>
+			<origin xyz="-0.00029029834541131595 -0.008731248094137434 -0.001250573391652493" rpy="0 0 0"></origin>
 		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.263366"></sphere>
-			</geometry>
-			<origin xyz="0.07538432544535824 0.08983075676281238 0.18782066675703268" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.265602"></sphere>
-			</geometry>
-			<origin xyz="0.10553132544535823 -0.027774243237187617 0.18301666675703268" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.271184"></sphere>
-			</geometry>
-			<origin xyz="-0.10369167455464176 0.009798756762812381 0.1805636667570327" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.264912"></sphere>
-			</geometry>
-			<origin xyz="-0.07972367455464176 -0.07772824323718762 0.1802466667570327" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.252761"></sphere>
-			</geometry>
-			<origin xyz="0.08121932544535823 -0.09805524323718762 0.1983826667570327" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.163736"></sphere>
-			</geometry>
-			<origin xyz="0.19265632544535824 0.05242475676281238 0.2693996667570327" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.172682"></sphere>
-			</geometry>
-			<origin xyz="-0.16669967455464177 -0.06518924323718762 0.2516076667570327" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="torso_lift_link">
 		<inertial>
-			<origin rpy="0 0 0" xyz="-0.0013 -0.0009 0.2935"></origin>
-			<mass value="10.7796"></mass>
-			<inertia ixx="0.3354" ixy="0.0" ixz="-0.0162" iyy="0.3354" iyz="-0.0006" izz="0.0954"></inertia>
-		</inertial>
-		<visual>
+			<mass value="7.778"></mass>
 			<origin rpy="0 0 0" xyz="0 0 0"></origin>
+			<inertia ixx="0.03147431257693659" ixy="0.0" ixz="0.0" iyy="0.03147431257693659" iyz="0.0" izz="0.021875624999999996"></inertia>
+		</inertial>
+	</link>
+	<link name="upper_arm_link">
+		<visual>
+			<origin rpy="1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0.1762"></origin>
 			<geometry>
-				<mesh filename="package://meshes/torso_lift_link.dae"></mesh>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/upperarm.dae"></mesh>
 			</geometry>
-			<material name="">
-				<color rgba="1 1 1 1"></color>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
 			</material>
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.09629"></sphere>
+				<sphere radius="0.092386"></sphere>
 			</geometry>
-			<origin xyz="0.09973460856318139 0.0013616589084991916 0.2421215346664115" rpy="0 0 0"></origin>
+			<origin xyz="-0.6070419690375328 1.428049325942994e-06 0.16623906538414956" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.176654"></sphere>
+				<sphere radius="0.107354"></sphere>
 			</geometry>
-			<origin xyz="-0.06897639143681861 -0.05099134109150081 0.12081453466641151" rpy="0 0 0"></origin>
+			<origin xyz="0.00041303096246719795 5.428049325942993e-06 0.17160506538414955" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.177572"></sphere>
+				<sphere radius="0.104797"></sphere>
 			</geometry>
-			<origin xyz="-0.06872939143681861 0.05820865890849919 0.12993553466641153" rpy="0 0 0"></origin>
+			<origin xyz="-0.5168849690375328 3.4280493259429935e-06 0.16899706538414955" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.166857"></sphere>
+				<sphere radius="0.10311"></sphere>
 			</geometry>
-			<origin xyz="-0.07161839143681861 -0.06554634109150081 0.30081753466641153" rpy="0 0 0"></origin>
+			<origin xyz="-0.42341096903753284 9.428049325942994e-06 0.17053706538414956" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.177938"></sphere>
+				<sphere radius="0.111557"></sphere>
 			</geometry>
-			<origin xyz="-0.06968739143681861 0.060107658908499194 0.3264795346664115" rpy="0 0 0"></origin>
+			<origin xyz="-0.32826696903753283 1.2428049325942994e-05 0.17244706538414956" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.175967"></sphere>
+				<sphere radius="0.113496"></sphere>
 			</geometry>
-			<origin xyz="-0.06529439143681862 -0.05336434109150081 0.4925385346664115" rpy="0 0 0"></origin>
+			<origin xyz="-0.2252829690375328 1.8428049325942992e-05 0.17491006538414955" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.163482"></sphere>
+				<sphere radius="0.11601"></sphere>
 			</geometry>
-			<origin xyz="-0.05547139143681861 0.06549565890849919 0.5074205346664116" rpy="0 0 0"></origin>
+			<origin xyz="-0.1291979690375328 2.6428049325942993e-05 0.17046706538414957" rpy="0 0 0"></origin>
 		</collision>
 		<collision>
 			<geometry>
-				<sphere radius="0.113644"></sphere>
+				<sphere radius="0.1175"></sphere>
 			</geometry>
-			<origin xyz="0.04364660856318139 -0.0026143410915008083 0.5568835346664115" rpy="0 0 0"></origin>
+			<origin xyz="-0.02926196903753281 6.4280493259429935e-06 0.17915506538414955" rpy="0 0 0"></origin>
 		</collision>
-	</link>
-	<link name="head_pan_link">
 		<inertial>
-			<origin rpy="0 0 0" xyz="0.0321 0.0161 0.0390"></origin>
-			<mass value="2.2556"></mass>
-			<inertia ixx="0.0129" ixy="0.0002" ixz="0.0007" iyy="0.0095" iyz="-0.0" izz="0.0184"></inertia>
+			<mass value="12.93"></mass>
+			<origin rpy="0 1.5707963267948966 0" xyz="-0.306 0.0 0.175"></origin>
+			<inertia ixx="0.42175380379841093" ixy="0.0" ixz="0.0" iyy="0.42175380379841093" iyz="0.0" izz="0.03636562499999999"></inertia>
 		</inertial>
+	</link>
+	<link name="forearm_link">
 		<visual>
+			<origin rpy="1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0.0393"></origin>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/forearm.dae"></mesh>
+			</geometry>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.077019"></sphere>
+			</geometry>
+			<origin xyz="-0.5630055789709092 6.197440385818482e-06 0.0494461657419205" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.081708"></sphere>
+			</geometry>
+			<origin xyz="-0.48916857897090915 -8.025596141815185e-07 0.0491121657419205" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.079711"></sphere>
+			</geometry>
+			<origin xyz="-0.4060235789709091 -5.802559614181519e-06 0.0465401657419205" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.083293"></sphere>
+			</geometry>
+			<origin xyz="-0.3313565789709091 -1.1802559614181519e-05 0.0518921657419205" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.081784"></sphere>
+			</geometry>
+			<origin xyz="-0.2526825789709091 -1.880255961418152e-05 0.048549165741920496" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.087833"></sphere>
+			</geometry>
+			<origin xyz="-0.16280557897090914 0.0008421974403858185 0.046586165741920496" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.088772"></sphere>
+			</geometry>
+			<origin xyz="-0.07611557897090912 -0.00018180255961418152 0.0427021657419205" rpy="0 0 0"></origin>
+		</collision>
+		<collision>
+			<geometry>
+				<sphere radius="0.072633"></sphere>
+			</geometry>
+			<origin xyz="-0.0009155789709091033 0.0003531974403858185 0.057430165741920496" rpy="0 0 0"></origin>
+		</collision>
+		<inertial>
+			<mass value="3.87"></mass>
+			<origin rpy="0 1.5707963267948966 0" xyz="-0.285775 0.0 0.0393"></origin>
+			<inertia ixx="0.11079302548902206" ixy="0.0" ixz="0.0" iyy="0.11079302548902206" iyz="0.0" izz="0.010884375"></inertia>
+		</inertial>
+	</link>
+	<link name="wrist_1_link">
+		<visual>
+			<origin rpy="1.5707963267948966 0 0" xyz="0 0 -0.135"></origin>
+			<geometry>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/wrist1.dae"></mesh>
+			</geometry>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
+			</material>
+		</visual>
+		<collision>
+			<geometry>
+				<sphere radius="0.079587"></sphere>
+			</geometry>
+			<origin xyz="-3.246590495109558e-06 -0.008833108022451398 -0.010040264912605295" rpy="0 0 0"></origin>
+		</collision>
+		<inertial>
+			<mass value="1.96"></mass>
 			<origin rpy="0 0 0" xyz="0 0 0"></origin>
+			<inertia ixx="0.005108247956699999" ixy="0.0" ixz="0.0" iyy="0.005108247956699999" iyz="0.0" izz="0.005512499999999999"></inertia>
+		</inertial>
+	</link>
+	<link name="wrist_2_link">
+		<visual>
+			<origin rpy="0 0 0" xyz="0 0 -0.12"></origin>
 			<geometry>
-				<mesh filename="package://meshes/head_pan_link.dae"></mesh>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/wrist2.dae"></mesh>
 			</geometry>
-			<material name="">
-				<color rgba="0.356 0.361 0.376 1"></color>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
 			</material>
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.086375"></sphere>
+				<sphere radius="0.081313"></sphere>
 			</geometry>
-			<origin xyz="0.12343675441503525 0.08581 0.05708059061092138" rpy="0 0 0"></origin>
+			<origin xyz="-0.00031414731042869374 0.00797893117351033 -0.0026956766253854966" rpy="0 0 0"></origin>
 		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.089818"></sphere>
-			</geometry>
-			<origin xyz="0.11853075441503524 -0.086927 0.05692659061092138" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.087547"></sphere>
-			</geometry>
-			<origin xyz="0.024179754415035247 0.086803 0.054446590610921386" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.069437"></sphere>
-			</geometry>
-			<origin xyz="0.14190275441503525 -0.002289 0.05788159061092138" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.087771"></sphere>
-			</geometry>
-			<origin xyz="0.011912754415035247 -0.088966 0.05241559061092138" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.073477"></sphere>
-			</geometry>
-			<origin xyz="-0.07077524558496476 -0.036044 0.03717259061092138" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.073951"></sphere>
-			</geometry>
-			<origin xyz="-0.06638924558496476 0.052527 0.038377590610921386" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.086521"></sphere>
-			</geometry>
-			<origin xyz="0.04210975441503525 0.000255 0.054715590610921384" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="head_tilt_link">
 		<inertial>
-			<origin rpy="0 0 0" xyz="0.0081 0.0025 0.0113"></origin>
-			<mass value="0.9087"></mass>
-			<inertia ixx="0.0061" ixy="-0.0" ixz="0.0002" iyy="0.0014" iyz="-0.0001" izz="0.0061"></inertia>
-		</inertial>
-		<visual>
+			<mass value="1.96"></mass>
 			<origin rpy="0 0 0" xyz="0 0 0"></origin>
+			<inertia ixx="0.005108247956699999" ixy="0.0" ixz="0.0" iyy="0.005108247956699999" iyz="0.0" izz="0.005512499999999999"></inertia>
+		</inertial>
+	</link>
+	<link name="wrist_3_link">
+		<visual>
+			<origin rpy="1.5707963267948966 0 0" xyz="0 0 -0.1168"></origin>
 			<geometry>
-				<mesh filename="package://meshes/head_tilt_link.dae"></mesh>
+				<mesh filename="package://ur_description/meshes/ur10e/visual/wrist3.dae"></mesh>
 			</geometry>
-			<material name="">
-				<color rgba="0.086 0.506 0.767 1"></color>
+			<material name="LightGrey">
+				<color rgba="0.7 0.7 0.7 1.0"></color>
 			</material>
 		</visual>
 		<collision>
 			<geometry>
-				<sphere radius="0.081449"></sphere>
+				<sphere radius="0.052616"></sphere>
 			</geometry>
-			<origin xyz="-0.0006868701811561552 -0.05480726869506671 -0.0018672518181735965" rpy="0 0 0"></origin>
+			<origin xyz="-0.00017564292037487028 -0.0007414466705322198 -0.0244805331659317" rpy="0 0 0"></origin>
 		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.065906"></sphere>
-			</geometry>
-			<origin xyz="0.015986129818843845 -0.0673382686950667 0.016785748181826404" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.077746"></sphere>
-			</geometry>
-			<origin xyz="0.004287129818843845 -0.01777926869506671 0.0038277481818264035" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.064643"></sphere>
-			</geometry>
-			<origin xyz="0.017723129818843844 0.06895273130493329 0.018035748181826402" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.073994"></sphere>
-			</geometry>
-			<origin xyz="0.001203129818843845 0.06070173130493329 -0.007953251818173596" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.068484"></sphere>
-			</geometry>
-			<origin xyz="-0.012164870181156156 0.0659687313049333 0.006930748181826403" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="shoulder_pan_link">
 		<inertial>
-			<origin rpy="0 0 0" xyz="0.0927 -0.0056 0.0564"></origin>
-			<mass value="2.5587"></mass>
-			<inertia ixx="0.0043" ixy="-0.0001" ixz="0.001" iyy="0.0087" iyz="-0.0001" izz="0.0087"></inertia>
+			<mass value="0.202"></mass>
+			<origin rpy="0 0 0" xyz="0.0 0.0 -0.025"></origin>
+			<inertia ixx="0.00014434577559500002" ixy="0.0" ixz="0.0" iyy="0.00014434577559500002" iyz="0.0" izz="0.00020452500000000002"></inertia>
 		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/shoulder_pan_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="1 1 1 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.072495"></sphere>
-			</geometry>
-			<origin xyz="-0.004828659248682879 0.0015305573109124695 -0.004788193241642792" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.079174"></sphere>
-			</geometry>
-			<origin xyz="0.015727340751317126 -0.0037604426890875293 0.0033068067583572093" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.073756"></sphere>
-			</geometry>
-			<origin xyz="0.013815340751317129 -0.010365442689087529 0.03669080675835721" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.078107"></sphere>
-			</geometry>
-			<origin xyz="0.05676234075131713 -0.01728044268908753 0.01736980675835721" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.06993"></sphere>
-			</geometry>
-			<origin xyz="0.06294934075131713 -0.027095442689087527 0.0709088067583572" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.071411"></sphere>
-			</geometry>
-			<origin xyz="0.11261734075131713 -0.02948544268908753 0.04061080675835721" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.064869"></sphere>
-			</geometry>
-			<origin xyz="0.12139334075131714 -0.03378644268908753 0.07867280675835721" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.063705"></sphere>
-			</geometry>
-			<origin xyz="0.1374053407513171 -0.03640744268908753 0.05725580675835721" rpy="0 0 0"></origin>
-		</collision>
 	</link>
-	<link name="shoulder_lift_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.1432 0.0072 -0.0001"></origin>
-			<mass value="2.6615"></mass>
-			<inertia ixx="0.0028" ixy="-0.0021" ixz="-0.0" iyy="0.0111" iyz="-0.0" izz="0.0112"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/shoulder_lift_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.086 0.506 0.767 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.05328"></sphere>
-			</geometry>
-			<origin xyz="-0.022597996408820153 0.03356700011920929 0.005316" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.059478"></sphere>
-			</geometry>
-			<origin xyz="-0.005816996408820149 0.02897200011920929 -0.01786" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.060986"></sphere>
-			</geometry>
-			<origin xyz="-0.0009739964088201492 0.026275000119209288 0.01481" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.066422"></sphere>
-			</geometry>
-			<origin xyz="0.04561300359117985 0.020266000119209288 -0.007605" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.070013"></sphere>
-			</geometry>
-			<origin xyz="0.12036300359117985 0.006880000119209289 -0.002693" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.066602"></sphere>
-			</geometry>
-			<origin xyz="0.04818700359117985 0.01953600011920929 0.006754" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.061772"></sphere>
-			</geometry>
-			<origin xyz="0.12900400359117986 -0.007273999880790711 -0.005219" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.064761"></sphere>
-			</geometry>
-			<origin xyz="0.12624600359117985 -0.0018859998807907105 0.008218" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="upperarm_roll_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.1165 0.0014 0.0000"></origin>
-			<mass value="2.3311"></mass>
-			<inertia ixx="0.0019" ixy="-0.0001" ixz="0.0" iyy="0.0045" iyz="0.0" izz="0.0047"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/upperarm_roll_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="1 1 1 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.060424"></sphere>
-			</geometry>
-			<origin xyz="0.13906300098347663 -0.02755800011920929 -0.006786" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.060374"></sphere>
-			</geometry>
-			<origin xyz="0.13493700098347663 -0.027052000119209288 0.008401" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.066599"></sphere>
-			</geometry>
-			<origin xyz="0.09084400098347664 -0.02091700011920929 -0.002047" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.061815"></sphere>
-			</geometry>
-			<origin xyz="0.043060000983476635 -0.01153600011920929 1e-06" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.049454"></sphere>
-			</geometry>
-			<origin xyz="-0.011517999016523367 -0.01585700011920929 -0.014819" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.052752"></sphere>
-			</geometry>
-			<origin xyz="-0.013757999016523359 0.00951799988079071 -0.017036" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.05587"></sphere>
-			</geometry>
-			<origin xyz="-0.011631999016523356 0.01284799988079071 0.008773" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.06104"></sphere>
-			</geometry>
-			<origin xyz="-0.0061629990165233545 -0.01093500011920929 0.010066" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="elbow_flex_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.1279 0.0073 0.0000"></origin>
-			<mass value="2.1299"></mass>
-			<inertia ixx="0.0024" ixy="-0.0016" ixz="0.0" iyy="0.0082" iyz="-0.0" izz="0.0084"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/elbow_flex_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.086 0.506 0.767 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.058933"></sphere>
-			</geometry>
-			<origin xyz="-0.0056690036954879786 0.02833800011920929 0.007934" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.0573"></sphere>
-			</geometry>
-			<origin xyz="-0.005933003695487979 0.02944900011920929 -0.009088" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.064423"></sphere>
-			</geometry>
-			<origin xyz="0.025891996304512024 0.02265500011920929 -0.000526" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.060811"></sphere>
-			</geometry>
-			<origin xyz="0.06528599630451203 0.01591300011920929 0.000522" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.068162"></sphere>
-			</geometry>
-			<origin xyz="0.11488599630451202 0.00863500011920929 -0.000826" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.058099"></sphere>
-			</geometry>
-			<origin xyz="0.12519099630451203 -0.0020619998807907096 -0.011096" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.051312"></sphere>
-			</geometry>
-			<origin xyz="0.131977996304512 -0.01792499988079071 0.001452" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.045291"></sphere>
-			</geometry>
-			<origin xyz="0.13661699630451202 -0.0008639998807907102 0.022519" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="forearm_roll_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.1097 -0.0266 0.0000"></origin>
-			<mass value="1.6563"></mass>
-			<inertia ixx="0.0016" ixy="-0.0003" ixz="0.0" iyy="0.003" iyz="-0.0" izz="0.0035"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/forearm_roll_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="1 1 1 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.042387"></sphere>
-			</geometry>
-			<origin xyz="0.1415369955445528 -0.06305099821186066 -0.017506" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.042991"></sphere>
-			</geometry>
-			<origin xyz="0.1386359955445528 -0.06259299821186065 0.019234" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.0566"></sphere>
-			</geometry>
-			<origin xyz="0.09182199554455281 -0.049116998211860656 -0.014037" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.05602"></sphere>
-			</geometry>
-			<origin xyz="0.08747699554455281 -0.048034998211860656 0.012947" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.067299"></sphere>
-			</geometry>
-			<origin xyz="0.017653995544552804 -0.018663998211860655 -0.002248" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.055532"></sphere>
-			</geometry>
-			<origin xyz="0.005672995544552806 1.7881393449270533e-09 0.014282" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.044786"></sphere>
-			</geometry>
-			<origin xyz="-0.004267004455447199 0.02406500178813934 0.004908" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.051369"></sphere>
-			</geometry>
-			<origin xyz="0.0011499955445528065 0.007357001788139344 -0.017052" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="wrist_flex_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.0882 0.0009 -0.0001"></origin>
-			<mass value="1.725"></mass>
-			<inertia ixx="0.0018" ixy="-0.0001" ixz="-0.0" iyy="0.0042" iyz="0.0" izz="0.0042"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/wrist_flex_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.086 0.506 0.767 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.07033"></sphere>
-			</geometry>
-			<origin xyz="0.0019179983012676226 0.015114000134110451 -9.2e-05" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.070782"></sphere>
-			</geometry>
-			<origin xyz="0.06442499830126763 0.011132000134110451 0.0" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.058935"></sphere>
-			</geometry>
-			<origin xyz="0.07582599830126763 -0.00560099986588955 -0.011324" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.061357"></sphere>
-			</geometry>
-			<origin xyz="0.07330499830126763 -0.008834999865889549 0.008803" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.068134"></sphere>
-			</geometry>
-			<origin xyz="0.04528599830126762 -0.0019719998658895496 4e-06" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.053375"></sphere>
-			</geometry>
-			<origin xyz="-0.0006010016987323744 -0.01890699986588955 0.016869" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.059432"></sphere>
-			</geometry>
-			<origin xyz="-0.010990001698732377 -0.013089999865889549 -0.001322" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.044337"></sphere>
-			</geometry>
-			<origin xyz="0.0007999983012676251 -0.02602899986588955 -0.024021" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="wrist_roll_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.0095 0.0004 -0.0002"></origin>
-			<mass value="0.1354"></mass>
-			<inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/wrist_roll_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="1 1 1 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.031852"></sphere>
-			</geometry>
-			<origin xyz="-0.0043039998211860655 -0.023891 -0.023648" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.033138"></sphere>
-			</geometry>
-			<origin xyz="-0.0037779998211860655 -0.032414 0.006111" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.032686"></sphere>
-			</geometry>
-			<origin xyz="-0.0039839998211860655 -0.01318 0.03147" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.034756"></sphere>
-			</geometry>
-			<origin xyz="-0.0017509998211860656 0.007604 0.023999" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.034644"></sphere>
-			</geometry>
-			<origin xyz="-0.0017499998211860657 -0.000167 -0.027028" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.031221"></sphere>
-			</geometry>
-			<origin xyz="-0.004200999821186066 0.032696 -0.008026" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.030363"></sphere>
-			</geometry>
-			<origin xyz="-0.005443999821186065 0.027857 0.020083" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.023318"></sphere>
-			</geometry>
-			<origin xyz="-0.008093999821186065 0.02159 -0.031428" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="gripper_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="-0.0900 -0.0001 -0.0017"></origin>
-			<mass value="1.5175"></mass>
-			<inertia ixx="0.0013" ixy="-0.0" ixz="0.0" iyy="0.0019" iyz="-0.0" izz="0.0024"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/gripper_link.dae"></mesh>
-			</geometry>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.059198"></sphere>
-			</geometry>
-			<origin xyz="-0.11773243125696325 -0.026429619577827464 0.0010289548177453665" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.054751"></sphere>
-			</geometry>
-			<origin xyz="-0.06656843125696327 -0.029320619577827466 0.005982954817745367" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.056919"></sphere>
-			</geometry>
-			<origin xyz="-0.06720643125696327 0.027306380422172535 -0.00020504518225463342" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.0533"></sphere>
-			</geometry>
-			<origin xyz="-0.06489543125696326 -0.030094619577827466 -0.0027330451822546336" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.050106"></sphere>
-			</geometry>
-			<origin xyz="-0.11884843125696326 0.03393138042217254 0.011087954817745367" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.059363"></sphere>
-			</geometry>
-			<origin xyz="-0.11561043125696327 0.003628380422172534 0.00034295481774536656" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.051434"></sphere>
-			</geometry>
-			<origin xyz="-0.12120743125696326 0.029786380422172534 -0.0045590451822546335" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.049641"></sphere>
-			</geometry>
-			<origin xyz="-0.06025443125696326 0.026870380422172536 0.010986954817745366" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="r_gripper_finger_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="-0.01 0 0"></origin>
-			<mass value="0.0798"></mass>
-			<inertia ixx="0.002" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0.101425 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/r_gripper_finger_link.STL"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.356 0.361 0.376 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.011321"></sphere>
-			</geometry>
-			<origin xyz="0.023504000163912773 -0.008574999403953551 -0.006" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011654"></sphere>
-			</geometry>
-			<origin xyz="0.022616000163912773 -0.008573999403953552 0.006001" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011625"></sphere>
-			</geometry>
-			<origin xyz="0.009306000163912772 -0.008574999403953551 -0.005999" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011604"></sphere>
-			</geometry>
-			<origin xyz="0.007706000163912773 -0.008573999403953552 0.006001" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011856"></sphere>
-			</geometry>
-			<origin xyz="-0.006135999836087227 -0.008574999403953551 -0.006001" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011801"></sphere>
-			</geometry>
-			<origin xyz="-0.021849999836087226 -0.008574999403953551 -0.005932" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011455"></sphere>
-			</geometry>
-			<origin xyz="-0.022044999836087226 -0.008574999403953551 0.006194" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011573"></sphere>
-			</geometry>
-			<origin xyz="-0.007245999836087227 -0.008574999403953551 0.006" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="l_gripper_finger_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="-0.01 0 0"></origin>
-			<mass value="0.0798"></mass>
-			<inertia ixx="0.002" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 -0.101425 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/l_gripper_finger_link.STL"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.356 0.361 0.376 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.010946"></sphere>
-			</geometry>
-			<origin xyz="0.023850000163912772 0.00857599940395355 0.005913" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.01187"></sphere>
-			</geometry>
-			<origin xyz="0.010116000163912774 0.008574999403953551 0.006" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.012164"></sphere>
-			</geometry>
-			<origin xyz="-0.021077999836087227 0.008574999403953551 0.005999" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011926"></sphere>
-			</geometry>
-			<origin xyz="0.008805000163912773 0.008574999403953551 -0.005999" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011177"></sphere>
-			</geometry>
-			<origin xyz="0.023365000163912773 0.008574999403953551 -0.006" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011621"></sphere>
-			</geometry>
-			<origin xyz="-0.006743999836087227 0.008574999403953551 -0.005999" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011609"></sphere>
-			</geometry>
-			<origin xyz="-0.005323999836087227 0.008574999403953551 0.006" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.011801"></sphere>
-			</geometry>
-			<origin xyz="-0.02184599983608723 0.008574999403953551 -0.005928" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="estop_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="0.002434512737072 -0.00330608315239905 0.00665139196650039"></origin>
-			<mass value="0.00196130439134723"></mass>
-			<inertia ixx="3.02810026604417E-07" ixy="-1.5862023118056E-08" ixz="3.16561396557437E-08" iyy="2.93322917127605E-07" iyz="-4.28833522751273E-08" izz="2.28513272627183E-07"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/estop_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.8 0 0 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.016414"></sphere>
-			</geometry>
-			<origin xyz="0.003043183450652437 -0.0042935436921201515 0.01544318613240149" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.015159"></sphere>
-			</geometry>
-			<origin xyz="0.010501183450652436 -0.006712543692120151 0.01550918613240149" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.016171"></sphere>
-			</geometry>
-			<origin xyz="0.0022121834506524368 -0.008497543692120153 0.01329518613240149" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.015908"></sphere>
-			</geometry>
-			<origin xyz="0.008659183450652436 -0.010307543692120152 0.013508186132401491" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.02065"></sphere>
-			</geometry>
-			<origin xyz="0.000770183450652437 -0.0028195436921201514 0.003306186132401491" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.018971"></sphere>
-			</geometry>
-			<origin xyz="0.003188183450652437 0.0001744563078798487 0.001961186132401491" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.018098"></sphere>
-			</geometry>
-			<origin xyz="-0.0006468165493475628 0.0020734563078798488 0.0035571861324014908" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="8e-05"></sphere>
-			</geometry>
-			<origin xyz="-0.018389816549347564 -0.0022405436921201513 -0.004206813867598509" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="torso_fixed_link">
-		<inertial>
-			<origin rpy="0 0 0" xyz="-0.0722 0.0057 0.2656"></origin>
-			<mass value="13.2775"></mass>
-			<inertia ixx="0.3861" ixy="0.0015" ixz="-0.0102" iyy="0.3388" iyz="0.0117" izz="0.1018"></inertia>
-		</inertial>
-		<visual>
-			<origin rpy="0 0 0" xyz="0 0 0"></origin>
-			<geometry>
-				<mesh filename="package://meshes/torso_fixed_link.dae"></mesh>
-			</geometry>
-			<material name="">
-				<color rgba="0.086 0.506 0.767 1"></color>
-			</material>
-		</visual>
-		<collision>
-			<geometry>
-				<sphere radius="0.137714"></sphere>
-			</geometry>
-			<origin xyz="-0.09808454020084877 0.08058705923959918 0.37596435569697184" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.130743"></sphere>
-			</geometry>
-			<origin xyz="-0.09091454020084877 -0.09964594076040083 0.06594235569697182" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.125916"></sphere>
-			</geometry>
-			<origin xyz="-0.09315254020084876 0.09488305923959918 0.05225635569697182" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.12561"></sphere>
-			</geometry>
-			<origin xyz="-0.09546154020084877 -0.08873194076040082 0.38449735569697185" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.140381"></sphere>
-			</geometry>
-			<origin xyz="-0.09987654020084877 -0.07251994076040083 0.23334235569697181" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.133817"></sphere>
-			</geometry>
-			<origin xyz="-0.09614954020084876 0.08814205923959917 0.21312535569697183" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.132094"></sphere>
-			</geometry>
-			<origin xyz="-0.09993754020084876 -0.010000940760400825 0.051819355696971825" rpy="0 0 0"></origin>
-		</collision>
-		<collision>
-			<geometry>
-				<sphere radius="0.036333"></sphere>
-			</geometry>
-			<origin xyz="-0.15249754020084877 -0.010922940760400825 0.44480935569697183" rpy="0 0 0"></origin>
-		</collision>
-	</link>
-	<link name="head_camera_link"></link>
-	<link name="head_camera_rgb_frame"></link>
-	<link name="head_camera_rgb_optical_frame"></link>
-	<link name="head_camera_depth_frame"></link>
-	<link name="head_camera_depth_optical_frame"></link>
-	<joint name="torso_lift_joint" type="prismatic">
-		<origin rpy="-6.123E-17 0 0" xyz="-0.086875 0 0.37743"></origin>
+	<link name="base"></link>
+	<link name="flange"></link>
+	<link name="tool0"></link>
+	<joint name="base_link-base_link_inertia" type="fixed">
 		<parent link="base_link"></parent>
-		<child link="torso_lift_link"></child>
-		<axis xyz="0 0 1"></axis>
-		<limit effort="450.0" lower="0" upper="0.38615" velocity="0.1"></limit>
-		<dynamics damping="100.0"></dynamics>
-	</joint>
-	<joint name="head_pan_joint" type="fixed">
-		<origin rpy="0 0 0" xyz="0.053125 0 0.603001417713939"></origin>
-		<parent link="torso_lift_link"></parent>
-		<child link="head_pan_link"></child>
-		<axis xyz="0 0 1"></axis>
-	</joint>
-	<joint name="head_tilt_joint" type="fixed">
-		<origin rpy="0 0 0" xyz="0.14253 0 0.057999"></origin>
-		<parent link="head_pan_link"></parent>
-		<child link="head_tilt_link"></child>
-		<axis xyz="0 1 0"></axis>
+		<child link="base_link_inertia"></child>
+		<origin rpy="0 0 3.141592653589793" xyz="0 0 0"></origin>
 	</joint>
 	<joint name="shoulder_pan_joint" type="revolute">
-		<origin rpy="0 0 0" xyz="0.119525 0 0.34858"></origin>
-		<parent link="torso_lift_link"></parent>
-		<child link="shoulder_pan_link"></child>
+		<parent link="base_link_inertia"></parent>
+		<child link="shoulder_link"></child>
+		<origin rpy="0 0 0" xyz="0 0 0.1807"></origin>
 		<axis xyz="0 0 1"></axis>
-		<dynamics damping="1.0"></dynamics>
-		<limit effort="33.82" lower="-1.6056" upper="1.6056" velocity="1.256"></limit>
+		<limit effort="330.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="2.0943951023931953"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
 	<joint name="shoulder_lift_joint" type="revolute">
-		<origin rpy="0 0 0" xyz="0.117 0 0.0599999999999999"></origin>
-		<parent link="shoulder_pan_link"></parent>
-		<child link="shoulder_lift_link"></child>
-		<axis xyz="0 1 0"></axis>
-		<dynamics damping="1.0"></dynamics>
-		<limit effort="131.76" lower="-1.221" upper="1.518" velocity="1.454"></limit>
+		<parent link="shoulder_link"></parent>
+		<child link="upper_arm_link"></child>
+		<origin rpy="1.570796327 0 0" xyz="0 0 0"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="330.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="2.0943951023931953"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
-	<joint name="upperarm_roll_joint" type="continuous">
-		<origin rpy="0 0 0" xyz="0.219 0 0"></origin>
-		<parent link="shoulder_lift_link"></parent>
-		<child link="upperarm_roll_link"></child>
-		<axis xyz="1 0 0"></axis>
-		<dynamics damping="5.0"></dynamics>
-		<limit effort="76.94" velocity="1.571"></limit>
+	<joint name="elbow_joint" type="revolute">
+		<parent link="upper_arm_link"></parent>
+		<child link="forearm_link"></child>
+		<origin rpy="0 0 0" xyz="-0.6127 0 0"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="150.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="3.141592653589793"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
-	<joint name="elbow_flex_joint" type="revolute">
-		<origin rpy="0 0 0" xyz="0.133 0 0"></origin>
-		<parent link="upperarm_roll_link"></parent>
-		<child link="elbow_flex_link"></child>
-		<axis xyz="0 1 0"></axis>
-		<dynamics damping="1.0"></dynamics>
-		<limit effort="66.18" lower="-2.251" upper="2.251" velocity="1.521"></limit>
+	<joint name="wrist_1_joint" type="revolute">
+		<parent link="forearm_link"></parent>
+		<child link="wrist_1_link"></child>
+		<origin rpy="0 0 0" xyz="-0.57155 0 0.17415"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="56.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.141592653589793"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
-	<joint name="forearm_roll_joint" type="continuous">
-		<origin rpy="0 0 0" xyz="0.197 0 0"></origin>
-		<parent link="elbow_flex_link"></parent>
-		<child link="forearm_roll_link"></child>
-		<axis xyz="1 0 0"></axis>
-		<dynamics damping="5.0"></dynamics>
-		<limit effort="29.35" velocity="1.571"></limit>
+	<joint name="wrist_2_joint" type="revolute">
+		<parent link="wrist_1_link"></parent>
+		<child link="wrist_2_link"></child>
+		<origin rpy="1.570796327 0 0" xyz="0 -0.11985 -2.458164590756244e-11"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="56.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.141592653589793"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
-	<joint name="wrist_flex_joint" type="revolute">
-		<origin rpy="0 0 0" xyz="0.1245 0 0"></origin>
-		<parent link="forearm_roll_link"></parent>
-		<child link="wrist_flex_link"></child>
-		<axis xyz="0 1 0"></axis>
-		<dynamics damping="1.0"></dynamics>
-		<limit effort="25.7" lower="-2.16" upper="2.16" velocity="2.268"></limit>
+	<joint name="wrist_3_joint" type="revolute">
+		<parent link="wrist_2_link"></parent>
+		<child link="wrist_3_link"></child>
+		<origin rpy="1.570796326589793 3.141592653589793 3.141592653589793" xyz="0 0.11655 -2.390480459346185e-11"></origin>
+		<axis xyz="0 0 1"></axis>
+		<limit effort="56.0" lower="-6.283185307179586" upper="6.283185307179586" velocity="3.141592653589793"></limit>
+		<dynamics damping="0" friction="0"></dynamics>
 	</joint>
-	<joint name="wrist_roll_joint" type="continuous">
-		<origin rpy="0 0 0" xyz="0.1385 0 0"></origin>
-		<parent link="wrist_flex_link"></parent>
-		<child link="wrist_roll_link"></child>
-		<axis xyz="1 0 0"></axis>
-		<limit effort="7.36" velocity="2.268"></limit>
-		<dynamics damping="5.0"></dynamics>
-	</joint>
-	<joint name="gripper_axis" type="fixed">
-		<origin rpy="0 0 0" xyz="0.16645 0 0"></origin>
-		<parent link="wrist_roll_link"></parent>
-		<child link="gripper_link"></child>
-		<axis xyz="0 1 0"></axis>
-	</joint>
-	<joint name="r_gripper_finger_joint" type="prismatic">
-		<origin rpy="0 0 0" xyz="0 0.015425 0"></origin>
-		<parent link="gripper_link"></parent>
-		<child link="r_gripper_finger_link"></child>
-		<axis xyz="0 1 0"></axis>
-		<limit effort="60" lower="0.0" upper="0.05" velocity="0.05"></limit>
-		<dynamics damping="100.0"></dynamics>
-	</joint>
-	<joint name="l_gripper_finger_joint" type="prismatic">
-		<origin rpy="0 0 0" xyz="0 -0.015425 0"></origin>
-		<parent link="gripper_link"></parent>
-		<child link="l_gripper_finger_link"></child>
-		<axis xyz="0 -1 0"></axis>
-		<limit effort="60" lower="0.0" upper="0.05" velocity="0.05"></limit>
-		<dynamics damping="100.0"></dynamics>
-	</joint>
-	<joint name="estop_joint" type="fixed">
-		<origin rpy="1.5708 0 0" xyz="-0.12465 0.23892 0.31127"></origin>
+	<joint name="base_link-base_fixed_joint" type="fixed">
+		<origin rpy="0 0 3.141592653589793" xyz="0 0 0"></origin>
 		<parent link="base_link"></parent>
-		<child link="estop_link"></child>
-		<axis xyz="0 0 0"></axis>
+		<child link="base"></child>
 	</joint>
-	<joint name="torso_fixed_joint" type="fixed">
-		<origin rpy="-6.12303176911189E-17 0 0" xyz="-0.086875 0 0.377425"></origin>
-		<parent link="base_link"></parent>
-		<child link="torso_fixed_link"></child>
-		<axis xyz="0 1 0"></axis>
+	<joint name="wrist_3-flange" type="fixed">
+		<parent link="wrist_3_link"></parent>
+		<child link="flange"></child>
+		<origin rpy="0 -1.5707963267948966 -1.5707963267948966" xyz="0 0 0"></origin>
 	</joint>
-	<joint name="head_camera_joint" type="fixed">
-		<origin rpy="0 0 0" xyz="0.055 0 0.0225"></origin>
-		<parent link="head_tilt_link"></parent>
-		<child link="head_camera_link"></child>
-	</joint>
-	<joint name="head_camera_rgb_joint" type="fixed">
-		<origin rpy="0 0 0" xyz="0 0.02 0"></origin>
-		<parent link="head_camera_link"></parent>
-		<child link="head_camera_rgb_frame"></child>
-	</joint>
-	<joint name="head_camera_rgb_optical_joint" type="fixed">
-		<origin rpy="-1.57079632679 0 -1.57079632679" xyz="0 0 0"></origin>
-		<parent link="head_camera_rgb_frame"></parent>
-		<child link="head_camera_rgb_optical_frame"></child>
-	</joint>
-	<joint name="head_camera_depth_joint" type="fixed">
-		<origin rpy="0 0 0" xyz="0 0.045 0"></origin>
-		<parent link="head_camera_link"></parent>
-		<child link="head_camera_depth_frame"></child>
-	</joint>
-	<joint name="head_camera_depth_optical_joint" type="fixed">
-		<origin rpy="-1.57079632679 0 -1.57079632679" xyz="0 0 0"></origin>
-		<parent link="head_camera_depth_frame"></parent>
-		<child link="head_camera_depth_optical_frame"></child>
+	<joint name="flange-tool0" type="fixed">
+		<origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"></origin>
+		<parent link="flange"></parent>
+		<child link="tool0"></child>
 	</joint>
 </robot>

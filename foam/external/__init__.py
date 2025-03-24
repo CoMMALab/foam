@@ -56,7 +56,7 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str],method) -> list[Sph
         input_mesh.flush()
 
         output_file = input_path.parent / (input_path.stem + f'-{method}.sph')
-        print(command)
+        # print(command)
         run(command + [str(input_path)], stdout = DEVNULL)
 
     if not output_file.exists():
@@ -214,7 +214,7 @@ def compute_spheres(
     # Clean up empty flags
     # command = [flag for flag in command if flag]
 
-    print(command)
+    # print(command)
     # if expand:
     #     command.append('-expand')
     # if merge:

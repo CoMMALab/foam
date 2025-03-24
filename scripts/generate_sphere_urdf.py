@@ -57,7 +57,7 @@ def main(
         if key in kwargs:
             branch_value = int(kwargs[key] * branch_value)
 
-        print(mesh.name, vr, branch_value)
+        print(f"Link::Mesh: {mesh.name}\n  Target Spheres: {branch_value}")
 
         sh.spherize_mesh(
             mesh.name,

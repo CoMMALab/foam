@@ -35,17 +35,18 @@ def spherize_mesh(
 
     loaded_mesh = loaded_mesh.copy()
 
+    if position is not None or orientation is not None:
+        tf = compose_matrix(angles=orientation, translate=position)
+        loaded_mesh.apply_transform(tf)
+
+    if scale is not None:
+        loaded_mesh.apply_scale(scale)
+
     # Normalize center
     low_bounds, high_bounds = loaded_mesh.bounds
     offset = (high_bounds + low_bounds) / 2
     loaded_mesh.apply_transform(translation_matrix(-offset))
 
-    if scale is not None:
-        loaded_mesh.apply_scale(scale)
-
-    if position is not None or orientation is not None:
-        tf = compose_matrix(angles=orientation, translate=position)
-        loaded_mesh.apply_transform(tf)
     method = spherization_kwargs['method']
     if not check_valid_for_spherization(method, loaded_mesh):
         loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
