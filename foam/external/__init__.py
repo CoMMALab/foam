@@ -57,10 +57,10 @@ def compute_spheres_helper(mesh: Trimesh, command: list[str],method) -> list[Sph
 
         output_file = input_path.parent / (input_path.stem + f'-{method}.sph')
         # print(command)
-        run(command + [str(input_path)], stdout = DEVNULL)
+        sphere_output = run(command + [str(input_path)], capture_output=True)
 
-    if not output_file.exists():
-        raise RuntimeError("Failed to create spheres for mesh. Mesh is probably invalid.")
+    if sphere_output.returncode != 0:
+        raise RuntimeError(f"Failed to create spheres for mesh. Mesh is probably invalid. {sphere_output.stdout}")
 
     low_bounds, high_bounds = mesh.bounds
     offset = (high_bounds + low_bounds) / 2
