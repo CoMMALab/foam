@@ -3,6 +3,7 @@ from json import load as jsload
 from json import dumps as jsdumps
 from concurrent.futures import ThreadPoolExecutor, Future
 from concurrent.futures import wait as future_wait
+from trimesh.primitives import Sphere as TMSphere
 
 from .utility import *
 from .external import *
@@ -34,6 +35,19 @@ def spherize_mesh(
         loaded_mesh = mesh
 
     loaded_mesh = loaded_mesh.copy()
+
+    if isinstance(mesh, TMSphere):
+        x, y, z = mesh.center
+        r = mesh.primitive.radius
+        return [
+            Spherization(
+                spheres=[Sphere(x, y, z, r)],
+                mean_error=0.0,
+                best_error=0.0,
+                worst_error=0.0,
+            )
+        ] * (spherization_kwargs["depth"] + 1)
+        # NOTE: Because depth seems to be 0-indexed and determines the number of fineness levels for the spherization
 
     if position is not None or orientation is not None:
         tf = compose_matrix(angles=orientation, translate=position)
