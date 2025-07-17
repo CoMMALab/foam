@@ -70,6 +70,7 @@ def main(
 
     # Call spherize_mesh with the updated kwargs
     spheres = spherize_mesh(
+        mesh,
         mesh_filepath,
         scale=np.array([scale] * 3),
         spherization_kwargs=spherization_kwargs,
