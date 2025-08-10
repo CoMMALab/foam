@@ -19,7 +19,9 @@ add_executable(
     manifold_old/src/Octree.h
 )
 
+find_package(Threads REQUIRED)
 add_executable(
     simplify_old
     manifold_old/src/simplify.cpp
 )
+target_link_libraries(simplify_old PRIVATE Threads::Threads)
