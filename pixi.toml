@@ -1,0 +1,50 @@
+[workspace]
+authors   = ["JafarAbdi <jafar.uruc@gmail.com>"]
+channels  = ["conda-forge"]
+name      = "foam"
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
+version   = "0.1.0"
+
+[activation.env]
+PYTHONPATH = "$PIXI_PROJECT_ROOT"
+
+[tasks]
+configure = { cmd = [
+  "cmake",
+  "-GNinja",
+  "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+  "-DCMAKE_BUILD_TYPE=Release",
+  "-DBUILD_TESTING=OFF",
+  "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
+  "-S",
+  ".",
+  "-B",
+  "build/",
+] }
+build = { cmd = "cmake --build build/", depends-on = ["configure"] }
+
+[dependencies]
+python = ">=3.11,<3.12"
+cmake  = ">=3,<4"
+ninja  = ">=1.13.1,<2"
+
+# Added with `pixi add --pypi $(cat requirements.txt)`
+[pypi-dependencies]
+contourpy       = "==1.3.1"
+cycler          = "==0.12.1"
+fire            = "==0.7.0"
+fonttools       = "==4.55.3"
+kiwisolver      = "==1.4.8"
+matplotlib      = "==3.10.0"
+numpy           = "==2.2.2"
+packaging       = "==24.2"
+pillow          = "==11.1.0"
+pyglet          = "==1.5.31"
+pybullet        = "==3.1.7"
+pyparsing       = "==3.2.1"
+python-dateutil = "==2.9.0.post0"
+scipy           = "==1.15.1"
+six             = "==1.17.0"
+termcolor       = "==2.5.0"
+trimesh         = "==4.5.3"
+xmltodict       = "==0.14.2"

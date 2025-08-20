@@ -34,3 +34,6 @@ PAT.txt
 /lib64
 /bin
 /gen
+# pixi environments
+.pixi/*
+!.pixi/config.toml
