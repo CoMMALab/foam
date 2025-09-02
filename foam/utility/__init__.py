@@ -259,3 +259,87 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
 def save_urdf(urdf: URDFDict, filename: Path):
     with open(filename, 'w') as f:
         f.write(xmltodict.unparse(urdf, pretty = True))
+
+
+## SDFs
+def load_sdf(sdf_path: Path) -> URDFDict:
+    with open(sdf_path, 'r') as f:
+        xml = xmltodict.parse(f.read())
+        xml['sdf']['@path'] = sdf_path
+        return xml
+
+def get_sdf_meshes(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
+    sdf_dir = Path(sdf['sdf']['@path']).parent
+
+    meshes = []
+    for link in sdf['sdf']['model']['link']:
+        name = link['@name']
+        if 'collision' not in link:
+            continue
+
+        collisions = link['collision']
+
+        if not isinstance(collisions, list):
+            collisions = [collisions]
+
+        for collision in collisions:
+            if 'pose' in collision:
+                xyzrpy = _urdf_array_to_np(collision['pose'])
+                xyz = xyzrpy[:3]
+                rpy = xyzrpy[3:]
+            else:
+                xyz = np.array([0., 0., 0.])
+                rpy = np.array([0., 0., 0.])
+
+            geometry = collision['geometry']
+            if 'mesh' in geometry:
+                mesh = geometry['mesh']
+                filename = _urdf_clean_filename(mesh['uri'])
+                scale = _urdf_array_to_np(mesh['scale']) if 'scale' in mesh else np.array([1., 1., 1.])
+                scale *= shrinkage # HACK: need to scale down to get some tight self collision working
+                meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(sdf_dir / filename), xyz, rpy, scale))
+
+    print(meshes)
+    return meshes
+
+
+def get_sdf_primitives(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimitive]:
+    primitives = []
+    for link in sdf['sdf']['model']['link']:
+        name = link['@name']
+        if 'collision' not in link:
+            continue
+
+        collisions = link['collision']
+
+        if not isinstance(collisions, list):
+            collisions = [collisions]
+
+        scale = np.array([shrinkage] * 3)
+        for i, collision in enumerate(collisions):
+            if 'pose' in collision:
+                xyzrpy = _urdf_array_to_np(collision['pose'])
+                xyz = xyzrpy[:3]
+                rpy = xyzrpy[3:]
+            else:
+                xyz = np.array([0., 0., 0.])
+                rpy = np.array([0., 0., 0.])
+
+            geometry = collision['geometry']
+            if 'box' in geometry:
+                box = geometry['box']
+                size = _urdf_array_to_np(box['size'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Box(size), xyz, rpy, scale))
+
+            elif 'sphere' in geometry:
+                sphere = geometry['sphere']
+                radius = float(sphere['radius'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", TMSphere(radius), xyz, rpy, scale))
+
+            elif 'cylinder' in geometry:
+                cylinder = geometry['cylinder']
+                length = float(cylinder['length'])
+                radius = float(cylinder['radius'])
+                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale))
+
+    return primitives

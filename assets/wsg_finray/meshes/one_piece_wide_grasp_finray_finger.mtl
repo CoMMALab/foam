@@ -1,0 +1,14 @@
+# Blender 4.3.2 MTL File: 'None'
+# www.blender.org
+
+newmtl one_piece_wide_grasp_finray_finger_material
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd one_piece_wide_grasp_finray_finger_color.png
+map_refl one_piece_wide_grasp_finray_finger_occlusion_roughness_metallic.png
+map_Bump -bm 1.000000 one_piece_wide_grasp_finray_finger_normal.png
