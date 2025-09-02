@@ -142,7 +142,9 @@ def get_urdf_primitives(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimi
                 cylinder = geometry['cylinder']
                 length = float(cylinder['@length'])
                 radius = float(cylinder['@radius'])
-                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale))
+                primitives.append(
+                    URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale)
+                    )
 
     return primitives
 
@@ -174,8 +176,10 @@ def get_urdf_meshes(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
                 mesh = geometry['mesh']
                 filename = _urdf_clean_filename(mesh['@filename'])
                 scale = _urdf_array_to_np(mesh['@scale']) if 'scale' in mesh else np.array([1., 1., 1.])
-                scale *= shrinkage # HACK: need to scale down to get some tight self collision working
-                meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(urdf_dir / filename), xyz, rpy, scale))
+                scale *= shrinkage                                                                        # HACK: need to scale down to get some tight self collision working
+                meshes.append(
+                    URDFMesh(f"{name}::{filename}", load_mesh_file(urdf_dir / filename), xyz, rpy, scale)
+                    )
 
     return meshes
 
@@ -268,6 +272,7 @@ def load_sdf(sdf_path: Path) -> URDFDict:
         xml['sdf']['@path'] = sdf_path
         return xml
 
+
 def get_sdf_meshes(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
     sdf_dir = Path(sdf['sdf']['@path']).parent
 
@@ -296,8 +301,10 @@ def get_sdf_meshes(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
                 mesh = geometry['mesh']
                 filename = _urdf_clean_filename(mesh['uri'])
                 scale = _urdf_array_to_np(mesh['scale']) if 'scale' in mesh else np.array([1., 1., 1.])
-                scale *= shrinkage # HACK: need to scale down to get some tight self collision working
-                meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(sdf_dir / filename), xyz, rpy, scale))
+                scale *= shrinkage                                                                       # HACK: need to scale down to get some tight self collision working
+                meshes.append(
+                    URDFMesh(f"{name}::{filename}", load_mesh_file(sdf_dir / filename), xyz, rpy, scale)
+                    )
 
     print(meshes)
     return meshes
@@ -340,6 +347,62 @@ def get_sdf_primitives(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimiti
                 cylinder = geometry['cylinder']
                 length = float(cylinder['length'])
                 radius = float(cylinder['radius'])
-                primitives.append(URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale))
+                primitives.append(
+                    URDFPrimitive(f"{name}::primitive{i}", Cylinder(radius, length), xyz, rpy, scale)
+                    )
 
     return primitives
+
+
+def set_sdf_spheres(sdf: URDFDict, spheres):
+    total_spheres = 0
+    for link in sdf['sdf']['model']['link']:
+        name = link['@name']
+        if 'collision' not in link:
+            continue
+
+        collisions = link['collision']
+
+        if not isinstance(collisions, list):
+            collisions = [collisions]
+
+        spherizations = []
+        for i, collision in enumerate(collisions):
+
+            geometry = collision['geometry']
+
+            if 'box' in geometry or 'cylinder' in geometry or 'sphere' in geometry:
+                key = f"{name}::primitive{i}"
+                if key in spheres:
+                    spherizations.append(spheres[key])
+
+            elif 'mesh' in geometry:
+                mesh = geometry['mesh']
+                filename = _urdf_clean_filename(mesh['uri'])
+                key = f"{name}::{filename}"
+
+                if key in spheres:
+                    spherizations.append(spheres[key])
+
+        collision = []
+        for spherization in spherizations:
+            for sphere in spherization.spheres:
+                total_spheres += 1
+                collision.append(
+                    {
+                        'geometry': {
+                            'sphere': {
+                                'radius': sphere.radius
+                                }
+                            },
+                        'pose': {' '.join(map(str, sphere.origin)) + ' 0 0 0'}
+                        }
+                    )
+
+        link['collision'] = collision
+    print(f"spheres: {total_spheres}")
+
+
+def save_sdf(sdf: URDFDict, filename: Path):
+    with open(filename, 'w') as f:
+        f.write(xmltodict.unparse(sdf, pretty = True))

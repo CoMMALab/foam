@@ -44,7 +44,6 @@ def main(
     meshes = get_sdf_meshes(sdf, shrinkage)
 
     for mesh in meshes:
-        break
 
         # branch_value = max(
         #     int(mesh.mesh.volume * 10000 * volume_heuristic_ratio), branch
@@ -91,8 +90,6 @@ def main(
 
 
     primitives = get_sdf_primitives(sdf, shrinkage)
-    print(primitives)
-    return
     for primitive in primitives:
         center, radius = minimum_nsphere(primitive.mesh.vertices)
         vr = Sphere(radius, center).volume / primitive.mesh.volume
@@ -139,8 +136,8 @@ def main(
         for primitive in primitives
         }
 
-    set_urdf_spheres(urdf, mesh_spheres | primitive_spheres)
-    save_urdf(urdf, Path(output))
+    set_sdf_spheres(sdf, mesh_spheres | primitive_spheres)
+    save_sdf(sdf, Path(output))
 
 
 if __name__ == "__main__":
