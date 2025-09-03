@@ -1,0 +1,247 @@
+<?xml version="1.0"?>
+<!-- Taken from nepfaff's repo scene_gen_policy -->
+<sdf version="1.7">
+  <model name="Schunk_Gripper">
+    <link name="body">
+      <pose>0 -0.049133 0 0 0 0</pose>
+      <inertial>
+        <mass>0.988882</mass>
+        <inertia>
+          <ixx>0.162992</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.162992</iyy>
+          <iyz>0</iyz>
+          <izz>0.164814</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://drake_models/wsg_50_description/meshes/wsg_body.gltf</uri>
+          </mesh>
+        </geometry>
+      </visual><collision name="sphere1">
+  <pose>-0.0365 0 0 0 0 0</pose>
+  <geometry>
+    <sphere>
+      <radius>0.0572</radius>
+    </sphere>
+  </geometry>
+</collision>
+
+<collision name="sphere2">
+  <pose>0.0365 0 0 0 0 0</pose>
+  <geometry>
+    <sphere>
+      <radius>0.0572</radius>
+    </sphere>
+  </geometry>
+</collision>
+    </link>
+    <frame name="body_frame">
+      <pose relative_to="body"/>
+</frame><link name="left_finger">
+  <pose>-0.05 0.014 -0.013 1.57 3.14 0</pose>
+  <inertial>
+    <mass>0.05</mass>
+    <inertia>
+      <ixx>0.16</ixx>
+      <ixy>0</ixy>
+      <ixz>0</ixz>
+      <iyy>0.16</iyy>
+      <iyz>0</iyz>
+      <izz>0.16</izz>
+    </inertia>
+  </inertial>
+  <visual name="visual">
+    <geometry>
+      <mesh>
+        <scale>1 1 1</scale>
+        <uri>package://combining_kinematics/models/wsg_finray/meshes/one_piece_wide_grasp_finray_finger.obj</uri>
+      </mesh>
+    </geometry>
+  </visual>
+
+  <!-- Sphere collisions -->
+
+  <collision name="sphere2">
+    <pose>0.01357295 -0.01379195 0.0210696 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.023293</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere3">
+    <pose>0.01881295 -0.01257795 -0.0039634 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.028732</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere4">
+    <pose>0.02180995 -0.01214495 -0.0287674 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.028329</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere5">
+    <pose>0.01726095 -0.01233395 -0.0497814 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.027105</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere6">
+    <pose>0.01254595 -0.01355295 -0.0750464 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.021853</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere7">
+    <pose>0.00791795 -0.01139595 -0.0952654 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.018393</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere8">
+    <pose>0.00357195 -0.01847595 -0.1142184 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.014293</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere9">
+    <pose>0.00260195 -0.00590495 -0.1177174 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.011584</radius>
+      </sphere>
+    </geometry>
+  </collision>
+</link>
+    <link name="right_finger">
+      <pose>0.05 0.014 0.013 1.57 0 0</pose>
+      <inertial>
+        <mass>0.05</mass>
+        <inertia>
+          <ixx>0.16</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.16</iyy>
+          <iyz>0</iyz>
+          <izz>0.16</izz>
+        </inertia>
+      </inertial>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <scale>1 1 1</scale>
+            <uri>package://combining_kinematics/models/wsg_finray/meshes/one_piece_wide_grasp_finray_finger.obj</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+  <!-- Sphere collisions -->
+
+  <collision name="sphere2">
+    <pose>0.01357295 -0.01379195 0.0210696 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.023293</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere3">
+    <pose>0.01881295 -0.01257795 -0.0039634 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.028732</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere4">
+    <pose>0.02180995 -0.01214495 -0.0287674 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.028329</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere5">
+    <pose>0.01726095 -0.01233395 -0.0497814 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.027105</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere6">
+    <pose>0.01254595 -0.01355295 -0.0750464 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.021853</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere7">
+    <pose>0.00791795 -0.01139595 -0.0952654 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.018393</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere8">
+    <pose>0.00357195 -0.01847595 -0.1142184 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.014293</radius>
+      </sphere>
+    </geometry>
+  </collision>
+
+  <collision name="sphere9">
+    <pose>0.00260195 -0.00590495 -0.1177174 0 0 0</pose>
+    <geometry>
+      <sphere>
+        <radius>0.011584</radius>
+      </sphere>
+    </geometry>
+  </collision>
+    </link>
+    <joint name="left_finger_sliding_joint" type="fixed">
+      <parent>body</parent>
+      <child>left_finger</child>
+    </joint>
+    <joint name="right_finger_sliding_joint" type="fixed">
+      <parent>body</parent>
+      <child>right_finger</child>
+    </joint>
+    <static>0</static>
+  </model>
+</sdf>
