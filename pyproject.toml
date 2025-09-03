@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "foam"
 version = "0.1.1"
 authors = [
-  { name="Zachary Kingston", email="zak@rice.edu" },
+  { name="Zachary Kingston", email="zkingston@purude.edu" },
 ]
 description  = "Interface for creating spherical approximation of meshes"
 readme = "README.md"
@@ -18,7 +18,9 @@ classifiers = [
 ]
 
 dependencies = [
-    "trimesh"
+    "trimesh",
+    "scipy",
+    "vhacdx"
 ]
 
 [project.urls]

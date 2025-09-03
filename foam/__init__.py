@@ -4,6 +4,9 @@ from json import dumps as jsdumps
 from concurrent.futures import ThreadPoolExecutor, Future
 from concurrent.futures import wait as future_wait
 from trimesh.primitives import Sphere as TMSphere
+from trimesh.decomposition import convex_decomposition
+from trimesh.util import concatenate
+from trimesh import Trimesh
 
 from .utility import *
 from .external import *
@@ -66,11 +69,13 @@ def spherize_mesh(
     loaded_mesh.apply_transform(translation_matrix(-offset))
 
     method = spherization_kwargs['method']
+
     if not check_valid_for_spherization(method, loaded_mesh):
         loaded_mesh = smooth_manifold(loaded_mesh, **process_kwargs)
 
     if not check_valid_for_spherization(method, loaded_mesh):
-        raise RuntimeError("Failed to make loaded_mesh valid!")
+        decomposition = convex_decomposition(loaded_mesh)
+        loaded_mesh = concatenate([Trimesh(vertices=d['vertices'], faces=d['faces']) for d in decomposition])
 
     try:
         spheres = compute_spheres(loaded_mesh, **spherization_kwargs)
@@ -131,23 +136,24 @@ class SpherizationDatabase:
     def __init__(self, path: Path):
         self.path = path
 
-        if path.exists():
-            with open(path, 'r') as json_file:
-                self.db = jsload(json_file, cls = SphereDecoder)
-                self.db = {
-                    mk: {
-                        int(bk): {
-                            int(dk): dv
-                            for dk, dv in bv.items()
-                            }
-                        for bk, bv in mv.items()
-                        }
-                    for mk,
-                    mv in self.db.items()
-                    }
+        # TODO: Fix database, currently issues with cache clearing
+        # if path.exists():
+        #     with open(path, 'r') as json_file:
+        #         self.db = jsload(json_file, cls = SphereDecoder)
+        #         self.db = {
+        #             mk: {
+        #                 int(bk): {
+        #                     int(dk): dv
+        #                     for dk, dv in bv.items()
+        #                     }
+        #                 for bk, bv in mv.items()
+        #                 }
+        #             for mk,
+        #             mv in self.db.items()
+        #             }
 
-        else:
-            self.db = {}
+        # else:
+        self.db = {}
 
     def __del__(self):
         with open(self.path, 'w') as f:
