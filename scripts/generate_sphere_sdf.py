@@ -9,7 +9,7 @@ from trimesh.nsphere import minimum_nsphere
 
 def main(
         filename: str = "assets/wsg_finray/wsg50_110_finray_fingers_box_collision.sdf",
-        output: str = "spherized.urdf",
+        output: str = "spherized.sdf",
         database: str = "sphere_database.json",
         depth: int = 1,
         branch: int = 8,
@@ -40,8 +40,9 @@ def main(
 
     sh = SpherizationHelper(Path(database), threads)
 
-    sdf = load_sdf(Path(filename))
-    meshes = get_sdf_meshes(sdf, shrinkage)
+    filename = Path(filename)
+    sdf = load_sdf(filename)
+    meshes = get_sdf_meshes(sdf, filename.parent, shrinkage)
 
     for mesh in meshes:
 

@@ -17,6 +17,7 @@ from trimesh.primitives import Sphere as TMSphere
 
 import numpy as np
 
+import resolve_robotics_uri_py
 import xmltodict
 
 
@@ -54,6 +55,7 @@ def as_mesh(scene_or_mesh: Trimesh | Scene) -> Trimesh | None:
 
 def load_mesh_file(mesh_filepath: Path) -> Trimesh:
     try:
+        mesh_filepath = resolve_robotics_uri_py.resolve_robotics_uri(str(mesh_filepath))
         mesh = as_mesh(load_mesh(mesh_filepath, process = False)) # type: ignore
         if mesh is None:
             raise RuntimeError("Failed to load mesh!")
@@ -269,13 +271,10 @@ def save_urdf(urdf: URDFDict, filename: Path):
 def load_sdf(sdf_path: Path) -> URDFDict:
     with open(sdf_path, 'r') as f:
         xml = xmltodict.parse(f.read())
-        xml['sdf']['@path'] = sdf_path
         return xml
 
 
-def get_sdf_meshes(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
-    sdf_dir = Path(sdf['sdf']['@path']).parent
-
+def get_sdf_meshes(sdf: URDFDict, sdf_dir, shrinkage: float = 1.) -> list[URDFMesh]:
     meshes = []
     for link in sdf['sdf']['model']['link']:
         name = link['@name']
@@ -306,7 +305,6 @@ def get_sdf_meshes(sdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
                     URDFMesh(f"{name}::{filename}", load_mesh_file(sdf_dir / filename), xyz, rpy, scale)
                     )
 
-    print(meshes)
     return meshes
 
 
@@ -390,6 +388,7 @@ def set_sdf_spheres(sdf: URDFDict, spheres):
                 total_spheres += 1
                 collision.append(
                     {
+                        '@name': f'sphere_{total_spheres}',
                         'geometry': {
                             'sphere': {
                                 'radius': sphere.radius

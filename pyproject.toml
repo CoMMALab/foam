@@ -20,7 +20,8 @@ classifiers = [
 dependencies = [
     "trimesh",
     "scipy",
-    "vhacdx"
+    "vhacdx",
+    "resolve-robotics-uri-py",
 ]
 
 [project.urls]
