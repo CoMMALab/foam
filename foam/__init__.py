@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor, Future
 from concurrent.futures import wait as future_wait
 from trimesh.primitives import Sphere as TMSphere
 
-from .utility import *
-from .external import *
-from .model import *
+from foam.utility import *
+from foam.external import *
+from foam.model import *
 
 from trimesh.transformations import compose_matrix, euler_matrix, translation_matrix, quaternion_matrix
 
