@@ -30,6 +30,8 @@ from foam.__init__ import (
     SpherizationHelper
 )
 
+#TODO THESE ARE STILL VERY BUGGY!!!!!!!!!!!!!!
+
 class TestSmoothManifold(unittest.TestCase):
     
     @patch('your_module.manifold') # IMPORTANT THESE CREATE "FAKE" VERSIONS OF THE FUNCTIONS
