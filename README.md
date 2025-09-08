@@ -26,6 +26,16 @@ Foam can either be installed natively on linux/wsl or through a dockerized conta
 ## Building with Docker 
 Navigate to the [Docker quickstart](https://github.com/CoMMALab/foam/blob/master/DOCKER_QUICKSTART.md) for detailed instructions.
 
+## Installation with pixi
+
+Foam supports installation with [pixi](https://pixi.sh/latest/).
+
+To install foam with pixi, run the following command:
+
+```bash
+pixi run build
+```
+
 ## Obtaining & Building Dependencies 
 Foam is supported on Linux/WSL with python3.11 and cmake 3.29. Output visualization can be run on Windows/MacOS natively using spherized files.
 ```sh
