@@ -153,9 +153,11 @@ class TestSpherizeMesh(unittest.TestCase):
         self.assertEqual(result, mock_spheres)
     
     @patch('foam.check_valid_for_spherization')
-    def test_spherize_mesh_fails_validation(self, mock_check):
-        # Setup
+    @patch('foam.smooth_manifold')  # Add this patch
+    def test_spherize_mesh_fails_validation(self, mock_smooth, mock_check):
+        # Setup - Mock always returns False for validation
         mock_check.return_value = False
+        mock_smooth.return_value = self.mock_mesh  # Ensure smooth_manifold returns a mock
         spherization_kwargs = {'method': 'medial'}
         
         # Execute & Assert
