@@ -39,7 +39,7 @@ def add_thickness(mesh, thickness):
 
 
 # Load and process mesh
-original_mesh = trimesh.load('/assets/meshes/link_aruco_left_base.STL')
+original_mesh = trimesh.load('../assets/meshes/link_aruco_left_base.STL')
 
 print("Original dimensions:")
 print(np.ptp(original_mesh.vertices, axis=0))
