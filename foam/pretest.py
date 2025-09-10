@@ -18,64 +18,64 @@ class TestAddThickness(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures with various mesh types."""
         # Create a simple triangle mesh for testing
-        self.simple_vertices = np.array([
+        self.simple_vertices = np.array([ # creates a triangle
             [0, 0, 0],
             [1, 0, 0], 
             [0.5, 1, 0]
         ])
         self.simple_faces = np.array([[0, 1, 2]])
-        self.simple_mesh = Mock()
-        self.simple_mesh.vertices = self.simple_vertices
+        self.simple_mesh = Mock() # fake mesh
+        self.simple_mesh.vertices = self.simple_vertices #assigns verts and fasces of the triangle to the fake mesh
         self.simple_mesh.faces = self.simple_faces
-        self.simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        self.simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
+        self.simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]]) # the normals (all pointint in z direction)
+        self.simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]]) # the edges of the triangle
         
         # Create a planar square mesh
-        self.square_vertices = np.array([
+        self.square_vertices = np.array([ # creates a square in the xy plane
             [0, 0, 0],
             [1, 0, 0],
             [1, 1, 0],
             [0, 1, 0]
         ])
-        self.square_faces = np.array([
+        self.square_faces = np.array([ # two triangles to make a square
             [0, 1, 2],
             [0, 2, 3]
         ])
-        self.square_mesh = Mock()
-        self.square_mesh.vertices = self.square_vertices
+        self.square_mesh = Mock() # mock of square
+        self.square_mesh.vertices = self.square_vertices #assigns verts and faces of the square to the fake mesh
         self.square_mesh.faces = self.square_faces
-        self.square_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        self.square_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
+        self.square_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]) # all normals in z direction
+        self.square_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0]]) # edges of the square
         
         # Create a non-planar mesh mock
         self.cube_vertices = np.array([
             [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],  # bottom face
             [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]   # top face
         ])
-        self.cube_mesh = Mock()
-        self.cube_mesh.vertices = self.cube_vertices
+        self.cube_mesh = Mock() # mock of cube
+        self.cube_mesh.vertices = self.cube_vertices #assigns verts and faces of the cube to the fake mesh
         self.cube_mesh.vertex_normals = np.random.rand(8, 3)  # Random normals for non-planar
-        self.cube_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6]])
-        self.cube_mesh.faces = np.array([[0, 1, 2], [0, 2, 3]])
+        self.cube_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6]])    # edges of the cube
+        self.cube_mesh.faces = np.array([[0, 1, 2], [0, 2, 3]]) # just a couple of faces for simplicity
     
-    @patch('trimesh.Trimesh')
+    @patch('trimesh.Trimesh') # defines how the fucntion trimesh.Trimesh should behave when called
     def test_add_thickness_basic_functionality(self, mock_trimesh_class):
         """Test basic functionality with a simple triangle."""
         # Setup
-        mock_result = Mock()
-        mock_trimesh_class.return_value = mock_result
+        mock_result = Mock() # mock result of the Trimesh constructor
+        mock_trimesh_class.return_value = mock_result # setting the return value of the mock
         thickness = 0.1
         
         # Execute
-        result = add_thickness(self.simple_mesh, thickness)
+        result = add_thickness(self.simple_mesh, thickness) # THIS CALLS THE TRIANGLE MESH
         
         # Assert
-        self.assertEqual(result, mock_result)
-        mock_trimesh_class.assert_called_once()
-        args, kwargs = mock_trimesh_class.call_args
+        self.assertEqual(result, mock_result) # checks that the result is the mock result
+        mock_trimesh_class.assert_called_once() # checks that the Trimesh constructor was called once
+        args, kwargs = mock_trimesh_class.call_args # gets the arguments with which the Trimesh constructor was called
         
         # Check that vertices were doubled
-        vertices_arg = kwargs['vertices']
+        vertices_arg = kwargs['vertices'] 
         self.assertEqual(len(vertices_arg), len(self.simple_vertices) * 2)
         
         # Check that faces include original, flipped, and side faces
