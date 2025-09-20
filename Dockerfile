@@ -25,7 +25,6 @@ RUN apt-get update && apt-get upgrade -y && \
     python3-venv \
     python3-dev \
     libprotobuf-dev \
-    protobuf-compiler \
     curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
