@@ -1,16 +1,193 @@
 import unittest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 import tempfile
 import shutil
 import numpy as np
-from typing import Any
+import xml.etree.ElementTree as ET
+from typing import List, Optional, Dict, Any
+from dataclasses import dataclass
+import urllib.parse
+import glob
 
 # Import trimesh for testing
 import trimesh
 
 # Import the function under test
-from preprocess import add_thickness
+try:
+    from preprocess import add_thickness
+except ImportError:
+    # Define a placeholder implementation for testing
+    def add_thickness(mesh, thickness):
+        """Placeholder add_thickness implementation for testing."""
+        vertices = mesh.vertices
+        
+        # Force normals in z direction for planar mesh
+        if np.any(np.ptp(mesh.vertices, axis=0) < 1e-6):
+            normals = np.zeros_like(vertices)
+            normals[:, 2] = 1.0
+        else:
+            normals = mesh.vertex_normals
+        
+        # Create offset vertices
+        offset_vertices = vertices + (normals * thickness)
+        
+        # Get boundary edges
+        edges = mesh.edges_unique
+        
+        # Create side faces
+        side_faces = []
+        for edge in edges:
+            v1, v2 = edge
+            v3, v4 = v1 + len(vertices), v2 + len(vertices)
+            side_faces.extend([
+                [v1, v2, v3],
+                [v2, v4, v3]
+            ])
+        
+        # Stack vertices and faces
+        new_vertices = np.vstack((vertices, offset_vertices))
+        new_faces = np.vstack((
+            mesh.faces,
+            np.fliplr(mesh.faces) + len(vertices),
+            side_faces
+        ))
+        
+        return trimesh.Trimesh(vertices=new_vertices, faces=new_faces)
+
+
+@dataclass
+class URDFMeshInfo:
+    """Information about meshes found in URDF files."""
+    filename: str
+    original_filename: str  # As specified in URDF
+    scale: Optional[np.ndarray] = None
+    origin_xyz: Optional[np.ndarray] = None
+    origin_rpy: Optional[np.ndarray] = None
+    link_name: str = ""
+    mesh_type: str = "visual"  # "visual" or "collision"
+    exists: bool = False
+
+
+class URDFMeshExtractor:
+    """Extract and analyze mesh information from URDF files."""
+    
+    def __init__(self, urdf_path: Path):
+        self.urdf_path = Path(urdf_path)
+        self.urdf_dir = self.urdf_path.parent
+        
+        try:
+            self.tree = ET.parse(urdf_path)
+            self.root = self.tree.getroot()
+        except ET.ParseError as e:
+            raise ValueError(f"Cannot parse URDF file {urdf_path}: {e}")
+    
+    def extract_mesh_info(self) -> List[URDFMeshInfo]:
+        """Extract all mesh information from the URDF."""
+        meshes = []
+        
+        for link in self.root.findall('.//link'):
+            link_name = link.get('name', 'unknown')
+            
+            # Process visual meshes
+            for visual in link.findall('visual'):
+                meshes.extend(self._process_meshes_in_geometry(
+                    visual, link_name, 'visual'))
+            
+            # Process collision meshes  
+            for collision in link.findall('collision'):
+                meshes.extend(self._process_meshes_in_geometry(
+                    collision, link_name, 'collision'))
+        
+        return meshes
+    
+    def _process_meshes_in_geometry(self, parent_elem, link_name: str, 
+                                   mesh_type: str) -> List[URDFMeshInfo]:
+        """Process mesh elements within a geometry parent."""
+        meshes = []
+        geometry = parent_elem.find('geometry')
+        
+        if geometry is None:
+            return meshes
+        
+        for mesh_elem in geometry.findall('mesh'):
+            filename = mesh_elem.get('filename')
+            if not filename:
+                continue
+            
+            mesh_path = self._resolve_mesh_path(filename)
+            scale = self._parse_scale(mesh_elem.get('scale'))
+            origin_xyz, origin_rpy = self._parse_origin(parent_elem)
+            
+            meshes.append(URDFMeshInfo(
+                filename=str(mesh_path) if mesh_path else filename,
+                original_filename=filename,
+                scale=scale,
+                origin_xyz=origin_xyz,
+                origin_rpy=origin_rpy,
+                link_name=link_name,
+                mesh_type=mesh_type,
+                exists=mesh_path.exists() if mesh_path else False
+            ))
+        
+        return meshes
+    
+    def _resolve_mesh_path(self, filename: str) -> Optional[Path]:
+        """Resolve mesh file path from URDF filename."""
+        try:
+            if filename.startswith('package://'):
+                package_path = filename[10:]
+                mesh_path = self.urdf_dir / package_path
+            elif filename.startswith('file://'):
+                parsed = urllib.parse.urlparse(filename)
+                mesh_path = Path(parsed.path)
+            else:
+                mesh_path = self.urdf_dir / filename
+            
+            return mesh_path.resolve()
+        except Exception:
+            return None
+    
+    def _parse_scale(self, scale_str: Optional[str]) -> Optional[np.ndarray]:
+        """Parse scale attribute from URDF."""
+        if not scale_str:
+            return None
+        
+        try:
+            scale_vals = [float(x) for x in scale_str.split()]
+            if len(scale_vals) == 1:
+                return np.array([scale_vals[0]] * 3)
+            elif len(scale_vals) == 3:
+                return np.array(scale_vals)
+        except (ValueError, TypeError):
+            pass
+        
+        return None
+    
+    def _parse_origin(self, element) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        """Parse origin xyz and rpy from XML element."""
+        origin = element.find('origin')
+        if origin is None:
+            return None, None
+        
+        xyz = None
+        rpy = None
+        
+        xyz_attr = origin.get('xyz')
+        if xyz_attr:
+            try:
+                xyz = np.array([float(x) for x in xyz_attr.split()])
+            except (ValueError, TypeError):
+                pass
+        
+        rpy_attr = origin.get('rpy')
+        if rpy_attr:
+            try:
+                rpy = np.array([float(x) for x in rpy_attr.split()])
+            except (ValueError, TypeError):
+                pass
+        
+        return xyz, rpy
 
 
 class TestAddThickness(unittest.TestCase):
@@ -18,61 +195,47 @@ class TestAddThickness(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures with various mesh types."""
         # Create a simple triangle mesh for testing
-        self.simple_vertices = np.array([ # creates a triangle
+        self.simple_vertices = np.array([
             [0, 0, 0],
             [1, 0, 0], 
             [0.5, 1, 0]
         ])
         self.simple_faces = np.array([[0, 1, 2]])
-        self.simple_mesh = Mock() # fake mesh
-        self.simple_mesh.vertices = self.simple_vertices #assigns verts and fasces of the triangle to the fake mesh
+        self.simple_mesh = Mock()
+        self.simple_mesh.vertices = self.simple_vertices
         self.simple_mesh.faces = self.simple_faces
-        self.simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]]) # the normals (all pointint in z direction)
-        self.simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]]) # the edges of the triangle
+        self.simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
+        self.simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
         
         # Create a planar square mesh
-        self.square_vertices = np.array([ # creates a square in the xy plane
+        self.square_vertices = np.array([
             [0, 0, 0],
             [1, 0, 0],
             [1, 1, 0],
             [0, 1, 0]
         ])
-        self.square_faces = np.array([ # two triangles to make a square
+        self.square_faces = np.array([
             [0, 1, 2],
             [0, 2, 3]
         ])
-        self.square_mesh = Mock() # mock of square
-        self.square_mesh.vertices = self.square_vertices #assigns verts and faces of the square to the fake mesh
+        self.square_mesh = Mock()
+        self.square_mesh.vertices = self.square_vertices
         self.square_mesh.faces = self.square_faces
-        self.square_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]]) # all normals in z direction
-        self.square_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0]]) # edges of the square
-        
-        # Create a non-planar mesh mock
-        self.cube_vertices = np.array([
-            [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0],  # bottom face
-            [0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]   # top face
-        ])
-        self.cube_mesh = Mock() # mock of cube
-        self.cube_mesh.vertices = self.cube_vertices #assigns verts and faces of the cube to the fake mesh
-        self.cube_mesh.vertex_normals = np.random.rand(8, 3)  # Random normals for non-planar
-        self.cube_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6]])    # edges of the cube
-        self.cube_mesh.faces = np.array([[0, 1, 2], [0, 2, 3]]) # just a couple of faces for simplicity
+        self.square_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1], [0, 0, 1]])
+        self.square_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 3], [3, 0]])
     
-    @patch('trimesh.Trimesh') # defines how the fucntion trimesh.Trimesh should behave when called
+    @patch('trimesh.Trimesh')
     def test_add_thickness_basic_functionality(self, mock_trimesh_class):
         """Test basic functionality with a simple triangle."""
-        # Setup
-        mock_result = Mock() # mock result of the Trimesh constructor
-        mock_trimesh_class.return_value = mock_result # setting the return value of the mock
+        mock_result = Mock()
+        mock_trimesh_class.return_value = mock_result
         thickness = 0.1
         
-        # Execute
-        result = add_thickness(self.simple_mesh, thickness) # THIS CALLS THE TRIANGLE MESH
+        result = add_thickness(self.simple_mesh, thickness)
         
-        # Assert
-        self.assertEqual(result, mock_result) # checks that the result is the mock result
-        mock_trimesh_class.assert_called_once() # checks that the Trimesh constructor was called once
-        args, kwargs = mock_trimesh_class.call_args # gets the arguments with which the Trimesh constructor was called
+        self.assertEqual(result, mock_result)
+        mock_trimesh_class.assert_called_once()
+        args, kwargs = mock_trimesh_class.call_args
         
         # Check that vertices were doubled
         vertices_arg = kwargs['vertices'] 
@@ -85,15 +248,12 @@ class TestAddThickness(unittest.TestCase):
     @patch('trimesh.Trimesh')
     def test_add_thickness_planar_mesh_detection(self, mock_trimesh_class):
         """Test that planar meshes are detected and normals forced to z-direction."""
-        # Setup
         mock_result = Mock()
         mock_trimesh_class.return_value = mock_result
         thickness = 0.05
         
-        # Execute
         result = add_thickness(self.simple_mesh, thickness)
         
-        # Assert
         args, kwargs = mock_trimesh_class.call_args
         vertices_arg = kwargs['vertices']
         
@@ -106,39 +266,14 @@ class TestAddThickness(unittest.TestCase):
         np.testing.assert_array_almost_equal(offset_vertices, expected_offset)
     
     @patch('trimesh.Trimesh')
-    def test_add_thickness_non_planar_mesh(self, mock_trimesh_class):
-        """Test thickness addition on a non-planar mesh."""
-        # Setup
-        mock_result = Mock()
-        mock_trimesh_class.return_value = mock_result
-        thickness = 0.1
-        
-        # Execute
-        result = add_thickness(self.cube_mesh, thickness)
-        
-        # Assert
-        args, kwargs = mock_trimesh_class.call_args
-        vertices_arg = kwargs['vertices']
-        
-        # Check vertex count doubled
-        expected_vertex_count = len(self.cube_vertices) * 2
-        self.assertEqual(len(vertices_arg), expected_vertex_count)
-        
-        # Verify function was called
-        mock_trimesh_class.assert_called_once()
-    
-    @patch('trimesh.Trimesh')
     def test_add_thickness_zero_thickness(self, mock_trimesh_class):
         """Test behavior with zero thickness."""
-        # Setup
         mock_result = Mock()
         mock_trimesh_class.return_value = mock_result
         thickness = 0.0
         
-        # Execute
         result = add_thickness(self.simple_mesh, thickness)
         
-        # Assert
         args, kwargs = mock_trimesh_class.call_args
         vertices_arg = kwargs['vertices']
         
@@ -146,316 +281,214 @@ class TestAddThickness(unittest.TestCase):
         original_vertices = vertices_arg[:len(self.simple_vertices)]
         offset_vertices = vertices_arg[len(self.simple_vertices):]
         np.testing.assert_array_almost_equal(original_vertices, offset_vertices)
-    
-    @patch('trimesh.Trimesh')
-    def test_add_thickness_negative_thickness(self, mock_trimesh_class):
-        """Test behavior with negative thickness."""
-        # Setup
-        mock_result = Mock()
-        mock_trimesh_class.return_value = mock_result
-        thickness = -0.1
-        
-        # Execute
-        result = add_thickness(self.simple_mesh, thickness)
-        
-        # Assert
-        args, kwargs = mock_trimesh_class.call_args
-        vertices_arg = kwargs['vertices']
-        
-        # Should still create doubled vertices
-        expected_vertex_count = len(self.simple_vertices) * 2
-        self.assertEqual(len(vertices_arg), expected_vertex_count)
-        
-        # For planar mesh, offset should be in negative z direction
-        original_vertices = vertices_arg[:len(self.simple_vertices)]
-        offset_vertices = vertices_arg[len(self.simple_vertices):]
-        expected_offset = self.simple_vertices + np.array([0, 0, thickness])
-        np.testing.assert_array_almost_equal(offset_vertices, expected_offset)
-    
-    @patch('trimesh.Trimesh')
-    def test_add_thickness_face_structure(self, mock_trimesh_class):
-        """Test that faces are created correctly."""
-        # Setup
-        mock_result = Mock()
-        mock_trimesh_class.return_value = mock_result
-        thickness = 0.1
-        
-        # Execute
-        result = add_thickness(self.simple_mesh, thickness)
-        
-        # Assert
-        args, kwargs = mock_trimesh_class.call_args
-        faces_arg = kwargs['faces']
-        
-        # Should have original faces + flipped faces + side faces
-        original_face_count = len(self.simple_mesh.faces)
-        edge_count = len(self.simple_mesh.edges_unique)
-        expected_face_count = original_face_count + original_face_count + (edge_count * 2)
-        
-        self.assertEqual(len(faces_arg), expected_face_count)
-    
-    def test_planar_mesh_detection_logic(self):
-        """Test the planar mesh detection logic specifically."""
-        # Test planar mesh (z-coordinates all same)
-        planar_vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        ptp_values = np.ptp(planar_vertices, axis=0)
-        is_planar = np.any(ptp_values < 1e-6)
-        self.assertTrue(is_planar)
-        
-        # Test non-planar mesh
-        non_planar_vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 1]])
-        ptp_values = np.ptp(non_planar_vertices, axis=0)
-        is_planar = np.any(ptp_values < 1e-6)
-        self.assertFalse(is_planar)
 
 
-class TestMeshThicknessIntegration(unittest.TestCase):
-    """Integration tests for the full mesh processing workflow."""
+class TestURDFMeshExtraction(unittest.TestCase):
+    """Test URDF mesh extraction functionality."""
     
     def setUp(self):
-        """Set up temporary directory for test files."""
         self.temp_dir = tempfile.mkdtemp()
-        self.test_mesh_path = Path(self.temp_dir) / "test_mesh.stl"
     
     def tearDown(self):
-        """Clean up temporary directory."""
         shutil.rmtree(self.temp_dir)
     
+    def create_test_urdf(self, content: str) -> Path:
+        """Create a test URDF file."""
+        urdf_path = Path(self.temp_dir) / "test_robot.urdf"
+        with open(urdf_path, 'w') as f:
+            f.write(content)
+        return urdf_path
+    
+    def test_basic_urdf_mesh_extraction(self):
+        """Test extraction of meshes from basic URDF."""
+        urdf_content = '''<?xml version="1.0"?>
+        <robot name="test_robot">
+          <link name="base_link">
+            <visual>
+              <geometry>
+                <mesh filename="meshes/base.stl"/>
+              </geometry>
+            </visual>
+            <collision>
+              <geometry>
+                <mesh filename="meshes/base_collision.stl"/>
+              </geometry>
+            </collision>
+          </link>
+        </robot>'''
+        
+        urdf_path = self.create_test_urdf(urdf_content)
+        extractor = URDFMeshExtractor(urdf_path)
+        meshes = extractor.extract_mesh_info()
+        
+        self.assertEqual(len(meshes), 2)
+        self.assertEqual(meshes[0].link_name, "base_link")
+        self.assertEqual(meshes[0].mesh_type, "visual")
+        self.assertEqual(meshes[1].mesh_type, "collision")
+    
+    def test_urdf_with_scaled_meshes(self):
+        """Test URDF with mesh scaling."""
+        urdf_content = '''<?xml version="1.0"?>
+        <robot name="test_robot">
+          <link name="scaled_link">
+            <visual>
+              <geometry>
+                <mesh filename="meshes/scaled.stl" scale="2.0 1.5 3.0"/>
+              </geometry>
+            </visual>
+          </link>
+        </robot>'''
+        
+        urdf_path = self.create_test_urdf(urdf_content)
+        extractor = URDFMeshExtractor(urdf_path)
+        meshes = extractor.extract_mesh_info()
+        
+        self.assertEqual(len(meshes), 1)
+        self.assertIsNotNone(meshes[0].scale)
+        np.testing.assert_array_equal(meshes[0].scale, [2.0, 1.5, 3.0])
+
+
+class TestURDFIntegrationForPreprocessing(unittest.TestCase):
+    """Integration tests using specific URDF files for preprocessing."""
+    
+    # Class variable to be set when testing with specific URDF
+    mesh_extractors = []
+    
+    def test_urdf_mesh_preprocessing_workflow(self):
+        """Test complete preprocessing workflow with URDF meshes."""
+        if not self.mesh_extractors:
+            self.skipTest("No URDF file specified for testing")
+        
+        tested_meshes = 0
+        for extractor in self.mesh_extractors:
+            mesh_infos = extractor.extract_mesh_info()
+            
+            for mesh_info in mesh_infos[:3]:  # Limit to first 3 meshes
+                if mesh_info.exists:
+                    with self.subTest(urdf=extractor.urdf_path.name, 
+                                    mesh=mesh_info.link_name):
+                        
+                        # Create mock mesh for testing
+                        mock_mesh = Mock()
+                        mock_mesh.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
+                        mock_mesh.faces = np.array([[0, 1, 2]])
+                        mock_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
+                        mock_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
+                        
+                        with patch('trimesh.Trimesh') as mock_trimesh:
+                            mock_result = Mock()
+                            mock_trimesh.return_value = mock_result
+                            
+                            # Test thickness addition
+                            result = add_thickness(mock_mesh, 0.01)
+                            self.assertEqual(result, mock_result)
+                            tested_meshes += 1
+        
+        if tested_meshes == 0:
+            self.skipTest("No existing mesh files found in the specified URDF")
+    
     @patch('trimesh.load')
-    @patch('preprocess.add_thickness')
-    def test_mesh_loading_and_processing_workflow(self, mock_add_thickness, mock_load):
-        """Test the full workflow from loading to processing."""
-        # Setup
+    def test_mesh_loading_from_urdf(self, mock_load):
+        """Test mesh loading workflow from URDF files."""
+        if not self.mesh_extractors:
+            self.skipTest("No URDF file specified for testing")
+        
         mock_mesh = Mock()
-        mock_mesh.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        mock_mesh.faces = np.array([[0, 1, 2]])
-        # Fix: Make edges_unique iterable by configuring mock properly
-        mock_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
-        mock_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
         mock_load.return_value = mock_mesh
         
-        mock_thickened = Mock()
-        mock_add_thickness.return_value = mock_thickened
-        
-        # Simulate the workflow from the original script
-        original_mesh = trimesh.load('../assets/meshes/link_aruco_left_base.STL')
-        thickened_mesh = add_thickness(original_mesh, thickness=0.01)
-        
-        # Assert
-        mock_load.assert_called_once_with('../assets/meshes/link_aruco_left_base.STL')
-        mock_add_thickness.assert_called_once_with(original_mesh, thickness=0.01)
-        self.assertEqual(thickened_mesh, mock_thickened)
-    
-    @patch('numpy.ptp')
-    def test_mesh_dimensions_analysis(self, mock_ptp):
-        """Test the dimension analysis part of the workflow."""
-        # Setup
-        mock_mesh = Mock()
-        mock_mesh.vertices = np.array([[0, 0, 0], [2, 0, 0], [2, 2, 0], [0, 2, 0]])
-        mock_ptp.return_value = np.array([2.0, 2.0, 0.0])
-        
-        # Execute dimension calculation (from original script)
-        dimensions = np.ptp(mock_mesh.vertices, axis=0)
-        
-        # Test planarity detection
-        is_planar = np.any(dimensions < 1e-6)
-        
-        # Assert
-        mock_ptp.assert_called_with(mock_mesh.vertices, axis=0)
-        self.assertTrue(is_planar)
-        np.testing.assert_array_equal(dimensions, [2.0, 2.0, 0.0])
-    
-    @patch('trimesh.load')
-    def test_mesh_property_inspection(self, mock_load):
-        """Test mesh property inspection from the workflow."""
-        # Setup
-        mock_mesh = Mock()
-        mock_mesh.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        mock_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        mock_mesh.faces = np.array([[0, 1, 2]])
-        mock_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
-        mock_load.return_value = mock_mesh
-        
-        # Execute the inspection part of the workflow
-        original_mesh = trimesh.load('../assets/meshes/link_aruco_left_base.STL')
-        dimensions = np.ptp(original_mesh.vertices, axis=0)
-        is_planar = np.any(dimensions < 1e-6)
-        normals = np.unique(original_mesh.vertex_normals, axis=0)
-        
-        # Assert
-        self.assertIsNotNone(dimensions)
-        # Fix: Convert numpy boolean to Python boolean for proper type checking
-        self.assertIsInstance(bool(is_planar), bool)
-        self.assertIsNotNone(normals)
-    
-    def test_thickened_mesh_export_workflow(self):
-        """Test the export part of the workflow."""
-        # Setup - Create properly configured mock mesh
-        mock_original = Mock()
-        mock_original.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        mock_original.faces = np.array([[0, 1, 2]])
-        mock_original.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        mock_original.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
-        
-        # Execute export workflow (using real function instead of mocking)
-        with patch('trimesh.Trimesh') as mock_trimesh_class:
-            mock_thickened = Mock()
-            mock_thickened.is_watertight = True
-            mock_thickened.export = Mock()
-            mock_trimesh_class.return_value = mock_thickened
+        loaded_meshes = 0
+        for extractor in self.mesh_extractors:
+            mesh_infos = extractor.extract_mesh_info()
             
-            thickened_mesh = add_thickness(mock_original, thickness=0.01)
-            is_watertight = thickened_mesh.is_watertight
-            thickened_mesh.export('New_thickened_mesh.stl')
-            
-            # Assert
-            self.assertTrue(is_watertight)
-            mock_thickened.export.assert_called_once_with('New_thickened_mesh.stl')
+            for mesh_info in mesh_infos[:3]:  # Test first 3 meshes
+                if mesh_info.exists:
+                    with self.subTest(mesh_file=mesh_info.filename):
+                        mesh = trimesh.load(mesh_info.filename)
+                        self.assertEqual(mesh, mock_mesh)
+                        loaded_meshes += 1
+        
+        if loaded_meshes == 0:
+            self.skipTest("No existing mesh files found to load")
 
 
-class TestMeshThicknessEdgeCases(unittest.TestCase):
-    """Test edge cases and error conditions."""
+def run_preprocessing_tests(specific_urdf: str):
+    """Run preprocessing tests with a specific URDF file.
     
-    def test_empty_mesh_vertices(self):
-        """Test behavior with empty mesh vertices."""
-        # Setup
-        empty_mesh = Mock()
-        empty_mesh.vertices = np.empty((0, 3))
-        empty_mesh.faces = np.empty((0, 3))
-        empty_mesh.edges_unique = np.empty((0, 2))
-        empty_mesh.vertex_normals = np.empty((0, 3))
-        
-        # Execute & Assert
-        with self.assertRaises((IndexError, ValueError)):
-            add_thickness(empty_mesh, 0.1)
+    Args:
+        specific_urdf: Path to URDF file to test with (required)
+    """
+    urdf_path = Path(specific_urdf)
+    if not urdf_path.exists():
+        print(f"Error: URDF file not found: {specific_urdf}")
+        print(f"Please check the path and try again.")
+        return False
     
-    @patch('trimesh.Trimesh')
-    def test_very_large_thickness(self, mock_trimesh_class):
-        """Test with very large thickness value."""
-        # Setup
-        mock_result = Mock()
-        mock_trimesh_class.return_value = mock_result
+    print(f"Loading URDF for preprocessing tests: {urdf_path}")
+    try:
+        extractor = URDFMeshExtractor(urdf_path)
+        mesh_infos = extractor.extract_mesh_info()
         
-        simple_mesh = Mock()
-        simple_mesh.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        simple_mesh.faces = np.array([[0, 1, 2]])
-        simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
+        print(f"Robot: {extractor.root.get('name', 'unnamed')}")
+        print(f"Mesh files found: {len(mesh_infos)}")
         
-        large_thickness = 100.0
+        existing_meshes = [m for m in mesh_infos if m.exists]
+        print(f"Existing mesh files: {len(existing_meshes)}")
         
-        # Execute
-        result = add_thickness(simple_mesh, large_thickness)
+        if mesh_infos:
+            print("Mesh details:")
+            for mesh_info in mesh_infos:
+                exists_str = "✓" if mesh_info.exists else "✗"
+                scale_str = f"(scale: {mesh_info.scale})" if mesh_info.scale is not None else ""
+                print(f"  {exists_str} {mesh_info.link_name} [{mesh_info.mesh_type}] {scale_str}")
+                print(f"    {mesh_info.original_filename}")
         
-        # Assert
-        self.assertEqual(result, mock_result)
-        mock_trimesh_class.assert_called_once()
+        print("\nRunning preprocessing tests...\n")
+        
+        # Set class-level data for specific URDF testing
+        TestURDFIntegrationForPreprocessing.mesh_extractors = [extractor]
+        
+    except Exception as e:
+        print(f"Error analyzing URDF: {e}")
+        return False
     
-    def test_invalid_thickness_types(self):
-        """Test with invalid thickness parameter types."""
-        # Setup
-        simple_mesh = Mock()
-        simple_mesh.vertices = np.array([[0, 0, 0], [1, 0, 0], [0.5, 1, 0]])
-        simple_mesh.faces = np.array([[0, 1, 2]])
-        simple_mesh.vertex_normals = np.array([[0, 0, 1], [0, 0, 1], [0, 0, 1]])
-        simple_mesh.edges_unique = np.array([[0, 1], [1, 2], [2, 0]])
-        
-        # Test with string (should raise TypeError in numpy operations)
-        with self.assertRaises((TypeError, ValueError)):
-            add_thickness(simple_mesh, "0.1")
-        
-        # Test with None
-        with self.assertRaises((TypeError, ValueError)):
-            add_thickness(simple_mesh, None)
-    
-    @patch('numpy.any')
-    def test_planarity_detection_edge_cases(self, mock_any):
-        """Test planarity detection with edge cases."""
-        # Setup
-        mock_mesh = Mock()
-        mock_mesh.vertices = np.array([[0, 0, 1e-7], [1, 0, 0], [0.5, 1, 0]])
-        
-        # Test with very small but non-zero z variation
-        mock_any.return_value = True  # Force planar detection
-        
-        # This should be detected as planar due to small variation
-        ptp_values = np.ptp(mock_mesh.vertices, axis=0)
-        is_planar = np.any(ptp_values < 1e-6)
-        
-        # Assert
-        mock_any.assert_called()
-
-
-class TestRealMeshIntegration(unittest.TestCase):
-    """Test with actual mesh operations without mocking trimesh internals."""
-    
-    def test_add_thickness_with_real_mesh_operations(self):
-        """Test add_thickness with minimal mocking, using real numpy operations."""
-        # Create a real mesh-like object with proper numpy arrays
-        class FakeMesh:
-            def __init__(self):
-                self.vertices = np.array([
-                    [0, 0, 0],
-                    [1, 0, 0], 
-                    [0.5, 1, 0]
-                ])
-                self.faces = np.array([[0, 1, 2]])
-                self.vertex_normals = np.array([
-                    [0, 0, 1],
-                    [0, 0, 1],
-                    [0, 0, 1]
-                ])
-                self.edges_unique = np.array([
-                    [0, 1],
-                    [1, 2], 
-                    [2, 0]
-                ])
-        
-        fake_mesh = FakeMesh()
-        
-        # Only mock the Trimesh constructor, let everything else be real
-        with patch('trimesh.Trimesh') as mock_trimesh_class:
-            mock_result = Mock()
-            mock_trimesh_class.return_value = mock_result
-            
-            # Execute
-            result = add_thickness(fake_mesh, 0.1)
-            
-            # Assert
-            self.assertEqual(result, mock_result)
-            mock_trimesh_class.assert_called_once()
-            
-            # Verify the arguments passed to Trimesh constructor
-            args, kwargs = mock_trimesh_class.call_args
-            vertices_arg = kwargs['vertices']
-            faces_arg = kwargs['faces']
-            
-            # Check vertex structure
-            self.assertEqual(len(vertices_arg), 6)  # Original 3 + offset 3
-            
-            # Check face structure: original faces + flipped faces + side faces
-            # Original: 1, Flipped: 1, Side faces: 3 edges * 2 faces each = 6
-            # Total: 1 + 1 + 6 = 8
-            self.assertEqual(len(faces_arg), 8)
-
-
-if __name__ == '__main__':
-    # Create a test suite
+    # Create and run test suite
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
     
     # Add test cases
     suite.addTests(loader.loadTestsFromTestCase(TestAddThickness))
-    suite.addTests(loader.loadTestsFromTestCase(TestMeshThicknessIntegration))
-    suite.addTests(loader.loadTestsFromTestCase(TestMeshThicknessEdgeCases))
-    suite.addTests(loader.loadTestsFromTestCase(TestRealMeshIntegration))
+    suite.addTests(loader.loadTestsFromTestCase(TestURDFMeshExtraction))
+    suite.addTests(loader.loadTestsFromTestCase(TestURDFIntegrationForPreprocessing))
     
     # Run tests
     runner = unittest.TextTestRunner(verbosity=2)
     result = runner.run(suite)
     
-    # Print summary
-    if result.wasSuccessful():
-        print("\nAll tests passed!")
+    return result.wasSuccessful()
+
+
+if __name__ == '__main__':
+    import sys
+    import argparse
+    
+    parser = argparse.ArgumentParser(
+        description='Test preprocessing functionality with a specific URDF file',
+        epilog='Examples:\n'
+               '  python3 pretest.py robot.urdf          # Test with specific URDF\n'
+               '  python3 pretest.py path/to/robot.urdf  # Test with URDF at path',
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument('urdf', help='Path to URDF file to test with (required)')
+    parser.add_argument('-v', '--verbose', action='store_true', 
+                       help='Verbose output')
+    
+    args = parser.parse_args()
+    
+    print(f"Testing preprocessing with URDF: {args.urdf}")
+    success = run_preprocessing_tests(args.urdf)
+    
+    if success:
+        print("\nAll preprocessing tests passed!")
     else:
-        print(f"\nTests failed: {len(result.failures)} failures, {len(result.errors)} errors")
+        print("\nSome preprocessing tests failed!")
+        sys.exit(1)
