@@ -173,7 +173,7 @@ def get_urdf_meshes(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFMesh]:
             if 'mesh' in geometry:
                 mesh = geometry['mesh']
                 filename = _urdf_clean_filename(mesh['@filename'])
-                scale = _urdf_array_to_np(mesh['@scale']) if 'scale' in mesh else np.array([1., 1., 1.])
+                scale = _urdf_array_to_np(mesh['@scale']) if '@scale' in mesh else np.array([1., 1., 1.])
                 scale *= shrinkage # HACK: need to scale down to get some tight self collision working
                 meshes.append(URDFMesh(f"{name}::{filename}", load_mesh_file(urdf_dir / filename), xyz, rpy, scale))
 
