@@ -8,11 +8,13 @@ numpy==2.2.2
 packaging==24.2
 pillow==11.1.0
 pyglet==1.5.31
-pybullet==3.1.7
 pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 scipy==1.15.1
 six==1.17.0
 termcolor==2.5.0
 trimesh==4.5.3
+vhacdx==0.0.10
+viser==1.0.21
 xmltodict==0.14.2
+yourdfpy==0.0.60
