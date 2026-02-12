@@ -135,8 +135,16 @@ def main(
         for primitive in primitives
         }
 
-    set_urdf_spheres(urdf, mesh_spheres | primitive_spheres)
-    save_urdf(urdf, Path(output))
+    all_spheres = mesh_spheres | primitive_spheres
+
+    output_path = Path(output)
+    if output_path.suffix.lower() == ".srdf":
+        srdf = load_srdf(output_path)
+        set_srdf_link_sphere_approximations(srdf, all_spheres)
+        save_srdf(srdf, output_path)
+    else:
+        set_urdf_spheres(urdf, all_spheres)
+        save_urdf(urdf, output_path)
 
 
 if __name__ == "__main__":

@@ -103,6 +103,13 @@ def load_urdf(urdf_path: Path) -> URDFDict:
         return xml
 
 
+def load_srdf(srdf_path: Path) -> URDFDict:
+    with open(srdf_path, 'r') as f:
+        xml = xmltodict.parse(f.read())
+        xml['robot']['@path'] = srdf_path
+        return xml
+
+
 def get_urdf_primitives(urdf: URDFDict, shrinkage: float = 1.) -> list[URDFPrimitive]:
     primitives = []
     for link in urdf['robot']['link']:
@@ -256,6 +263,45 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
     print(f"spheres: {total_spheres}")
 
 
+def set_srdf_link_sphere_approximations(srdf: URDFDict, spheres):
+    spheres_by_link = {}
+    total_spheres = 0
+    for key, spherization in spheres.items():
+        link_name = key.split('::')[0]
+        if link_name not in spheres_by_link:
+            spheres_by_link[link_name] = []
+
+        spheres_by_link[link_name].extend(spherization.spheres)
+        total_spheres += len(spherization.spheres)
+
+    approximations = []
+    for link_name in sorted(spheres_by_link.keys()):
+        link_spheres = [
+            {
+                '@center': ' '.join(map(str, sphere.origin.tolist())),
+                '@radius': sphere.radius,
+            }
+            for sphere in spheres_by_link[link_name]
+        ]
+
+        approximations.append(
+            {
+                '@link': link_name,
+                'sphere': link_spheres,
+            }
+        )
+
+    if approximations:
+        srdf['robot']['link_sphere_approximation'] = approximations
+    elif 'link_sphere_approximation' in srdf['robot']:
+        del srdf['robot']['link_sphere_approximation']
+
+
 def save_urdf(urdf: URDFDict, filename: Path):
     with open(filename, 'w') as f:
         f.write(xmltodict.unparse(urdf, pretty = True))
+
+
+def save_srdf(srdf: URDFDict, filename: Path):
+    with open(filename, 'w') as f:
+        f.write(xmltodict.unparse(srdf, pretty = True))
