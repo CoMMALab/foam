@@ -20,7 +20,15 @@ classifiers = [
 dependencies = [
     "trimesh",
     "scipy",
-    "vhacdx"
+    "vhacdx",
+]
+
+[project.optional-dependencies]
+viz = [
+    "viser",
+    "yourdfpy",
+    "matplotlib",
+    "pyglet",
 ]
 
 [project.urls]
