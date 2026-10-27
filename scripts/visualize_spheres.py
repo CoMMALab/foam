@@ -1,41 +1,69 @@
-import random
-from json import load as jsload
+"""View a mesh and its spheres (JSON from generate_spheres.py) in the browser.
 
-import matplotlib as mpl
+    python scripts/visualize_spheres.py mesh.obj mesh-spheres.json
+"""
+import time
+from json import load as jsload
+from pathlib import Path
+
 from fire import Fire
-from trimesh.creation import icosphere
-from trimesh.exchange.load import load_mesh
-from trimesh.transformations import translation_matrix
-from trimesh.viewer import SceneViewer
 
 from foam import *
+from foam.viz import link_color, make_server
 
 
-def main(mesh: str, spheres: str | None = None, depth: int = 1):
-    mesh_filepath = Path(mesh)
-    if not mesh_filepath.exists:
-        raise RuntimeError(f"Path {mesh} does not exist!")
+def main(mesh: str, spheres: str | None = None, depth: int = 1, port: int = 8080):
+    server = make_server(port)
+    loaded = load_mesh_file(Path(mesh))
+    mesh_handle = server.scene.add_mesh_simple("/mesh", loaded.vertices, loaded.faces, color = (0.7, 0.7, 0.7))
 
-    scene = Scene([load_mesh_file(mesh_filepath)])
-
+    levels = []
     if spheres:
-        sphere_filepath = Path(spheres)
-        if not sphere_filepath.exists:
-            raise RuntimeError(f"Path {spheres} does not exist!")
+        with open(spheres, 'r') as f:
+            levels = jsload(f, cls = SphereDecoder)
 
-        with open(sphere_filepath, 'r') as json_file:
-            spherization = jsload(json_file, cls = SphereDecoder)
+        if depth >= len(levels):
+            raise RuntimeError(f"Depth {depth} not available ({len(levels)} levels)!")
 
-        if depth > len(spherization):
-            raise RuntimeError(f"Depth {depth} greater than available ({len(data)})!")
+    with server.gui.add_folder("Visualization"):
+        show_mesh = server.gui.add_checkbox("Show mesh", initial_value = True)
+        level = server.gui.add_slider("Level", min = 0, max = max(len(levels) - 1, 0), step = 1, initial_value = depth)
+        opacity = server.gui.add_slider("Opacity", min = 0.1, max = 1.0, step = 0.1, initial_value = 0.6)
+        info = server.gui.add_markdown("")
 
-        cm = mpl.colormaps['viridis']
-        for sphere in spherization[depth].spheres:
-            sphere_mesh = icosphere(radius = sphere.radius)
-            sphere_mesh.visual.face_colors = [255 * c for c in cm(random.uniform(0, 1))][:3] + [100]
-            scene.add_geometry(sphere_mesh, transform = translation_matrix(sphere.origin))
+    @show_mesh.on_update
+    def _(_):
+        mesh_handle.visible = show_mesh.value
 
-    SceneViewer(scene)
+    handles = []
+
+    def draw(_ = None):
+        for h in handles:
+            h.remove()
+
+        handles.clear()
+        if not levels:
+            return
+
+        spherization = levels[level.value]
+        for i, sphere in enumerate(spherization.spheres):
+            handles.append(server.scene.add_icosphere(
+                f"/spheres/{i}",
+                radius = sphere.radius,
+                position = tuple(sphere.origin),
+                color = link_color(i),
+                opacity = opacity.value,
+                ))
+
+        info.content = f"{len(spherization)} spheres, mean error {spherization.mean_error:.4f}"
+
+    level.on_update(draw)
+    opacity.on_update(draw)
+    draw()
+
+    print(f"Visualization ready at http://localhost:{port}")
+    while True:
+        time.sleep(1)
 
 
 if __name__ == "__main__":

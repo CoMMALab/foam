@@ -1,49 +1,45 @@
-import pybullet as p
-import pybullet_data
+"""View a URDF (e.g. a spherized one) in the browser with joint sliders.
+
+    python scripts/visualize_urdf.py spherized.urdf
+"""
 import time
-import argparse
+from pathlib import Path
 
-def load_urdf(urdf_path, use_gui=True):
-    # Start PyBullet simulation
-    if use_gui:
-        physics_client = p.connect(p.GUI)
-        p.configureDebugVisualizer(p.COV_ENABLE_GUI, 0)
-        p.configureDebugVisualizer(p.COV_ENABLE_TINY_RENDERER, 0)
-        p.configureDebugVisualizer(p.COV_ENABLE_RGB_BUFFER_PREVIEW, 0)
-        p.configureDebugVisualizer(p.COV_ENABLE_DEPTH_BUFFER_PREVIEW, 0)
-        p.configureDebugVisualizer(p.COV_ENABLE_SEGMENTATION_MARK_PREVIEW, 0)
-    else:
-        physics_client = p.connect(p.DIRECT)
-    
-    p.setAdditionalSearchPath(pybullet_data.getDataPath())  # Set search path
-    p.setGravity(0, 0, -9.81)  # Set gravity
+import numpy as np
+from fire import Fire
 
-    # Load plane and robot URDF
-    plane_id = p.loadURDF("plane.urdf")
-    robot_id = p.loadURDF(urdf_path, basePosition=[0, 0, 0], useFixedBase=True)
-    
-    # Run the simulation loop
-    try:
-        while use_gui:
-            p.stepSimulation()
-            
-            # Get the current position of the robot's base
-            pos, orn = p.getBasePositionAndOrientation(robot_id)
-            # If the robot's base goes below the plane (z < 0), reset its z-position to 0.
-            if pos[2] < 3:
-                p.resetBasePositionAndOrientation(robot_id, [pos[0], pos[1], 0], orn)
-            
-            time.sleep(1 / 240.0)  # Step simulation at ~240Hz
-    except KeyboardInterrupt:
-        pass
-    
-    # Disconnect from PyBullet
-    p.disconnect()
+from foam.viz import *
+
+
+def main(urdf: str, port: int = 8080):
+    robot = load_robot(Path(urdf), collision = True)
+    server = make_server(port)
+    viser_urdf = ViserUrdf(
+        server,
+        robot,
+        root_node_name = "/robot",
+        load_collision_meshes = True,
+        collision_mesh_color_override = (0.2, 0.6, 1.0, 0.6),
+        )
+
+    with server.gui.add_folder("Visualization"):
+        show_visual = server.gui.add_checkbox("Show visual", initial_value = True)
+        show_collision = server.gui.add_checkbox("Show collision", initial_value = True)
+
+    @show_visual.on_update
+    def _(_):
+        viser_urdf.show_visual = show_visual.value
+
+    @show_collision.on_update
+    def _(_):
+        viser_urdf.show_collision = show_collision.value
+
+    sliders = add_joint_sliders(server, robot)
+    print(f"Visualization ready at http://localhost:{port}")
+    while True:
+        viser_urdf.update_cfg(np.array([s.value for s in sliders]))
+        time.sleep(0.02)
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Load a URDF file into PyBullet simulation.")
-    parser.add_argument("urdf_file", type=str, help="Path to the URDF file.")
-    parser.add_argument("--nogui", action="store_true", help="Run without GUI.")
-    args = parser.parse_args()
-    
-    load_urdf(args.urdf_file, use_gui=not args.nogui)
+    Fire(main)

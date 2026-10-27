@@ -21,7 +21,6 @@ RUN apt-get update && apt-get upgrade -y && \
     ninja-build \
     git \
     python3 \
-    python3-pip \
     python3-venv \
     python3-dev \
     libprotobuf-dev \
@@ -31,8 +30,10 @@ RUN apt-get update && apt-get upgrade -y && \
 
 
 
-RUN python3 -m pip config set global.break-system-packages true
-RUN pip install \
+# uv installs into the system python (no venv), ~10x faster than pip
+COPY --from=ghcr.io/astral-sh/uv:0.8.0 /uv /usr/local/bin/uv
+ENV UV_SYSTEM_PYTHON=1 UV_BREAK_SYSTEM_PACKAGES=1 UV_LINK_MODE=copy
+RUN --mount=type=cache,target=/root/.cache/uv uv pip install \
     contourpy==1.3.1 \
     cycler==0.12.1 \
     fire==0.7.0 \
@@ -42,7 +43,8 @@ RUN pip install \
     numpy==2.2.2 \
     packaging==24.2 \
     pillow==11.1.0 \
-    pyglet==1.5.31 \
+    viser==1.1.1 \
+    yourdfpy==0.0.60 \
     pyparsing==3.2.1 \
     python-dateutil==2.9.0.post0 \
     scipy==1.15.1 \
@@ -51,14 +53,17 @@ RUN pip install \
     trimesh==4.5.3 \
     xmltodict==0.14.2
 
+# Bake the source and the spheretree/manifold binaries into the image, so it runs anywhere without a mount
 WORKDIR /foam
+COPY . /foam
+RUN sed -i 's/\r$//' startup.sh && \
+    cmake -Bbuild -GNinja . && cmake --build build/ && uv pip install -e . --no-deps
 
-# Copy the startup script
-COPY startup.sh /usr/local/bin/
-RUN sed -i 's/\r$//' /usr/local/bin/startup.sh && chmod +x /usr/local/bin/startup.sh
-RUN chmod +x /usr/local/bin/startup.sh
+# Work on the caller's files (mount them at /data); viser tools serve on 8080
+WORKDIR /data
+ENV MPLCONFIGDIR=/tmp/matplotlib
+EXPOSE 8080
 
-# Set the startup script as the entrypoint
-ENTRYPOINT ["/usr/local/bin/startup.sh"]
-
+# `docker run foam <script> [args]` runs scripts/<script>.py; anything else is executed as-is
+ENTRYPOINT ["bash", "/foam/startup.sh"]
 CMD ["bash"]

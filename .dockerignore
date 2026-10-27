@@ -1,0 +1,6 @@
+.git
+build
+.pixi
+images
+**/__pycache__
+*.egg-info

@@ -1,44 +1,46 @@
-# foam Docker Testing Configuration
-A custom dockerfile designed to containerize foam on Ubuntu 24.04 
+# foam in Docker
 
+The image bundles foam, its compiled spherization binaries, and the browser-based (viser) tools, so
+everything runs the same on Linux, macOS, and Windows. No display forwarding is needed.
 
-# Features 
-* automatically installs and builds foam from source
-* Creates an organized environment ready for foam testing on a clean system with dependency management
-* Can be directly developed on via VSCode
+## Build
 
-### Step 1: Install Docker Desktop and run Docker Desktop. 
-Docker Desktop comes with all components of Docker that are necessary to make our docker containers, as well as a nice UI to help us manage our containers and images. 
-https://www.docker.com/products/docker-desktop/
-### Step 2: Download the docker file from this repository. 
-Download `Dockerfile` and add it to a folder
-
-### Step 3: Building the Docker image
-First set the DOCKER_BUILDKIT environment variable. This speeds up Docker builds and allows utilizing secrets for private repository access.
-On windows, run
-```
-$env:DOCKER_BUILDKIT = "1"
+```bash
+docker build -t foam .
 ```
 
-On Linux and macOS, run
+## Run
+
+Mount the folder holding your robot files at `/data`. Paths you pass are relative to it, and outputs land there.
+Name any script in `scripts/` (with or without `.py`) as the command:
+
+```bash
+# Linux/macOS (PowerShell: use ${PWD} instead of $(pwd))
+alias foam='docker run --rm -it -p 8080:8080 -v "$(pwd):/data" foam'
+
+foam generate_sphere_urdf --filename panda/panda.urdf --output panda/panda_spherized.urdf
+foam generate_spheres mesh.obj
+foam generate_srdf panda/panda_spherized.urdf
+
+# Browser tools: open http://localhost:8080
+foam spherize_urdf_interactive panda/panda.urdf
+foam edit_spheres panda/panda_spherized.urdf
+foam visualize_urdf panda/panda_spherized.urdf
+foam visualize_spheres mesh.obj mesh-spheres.json
 ```
-export DOCKER_BUILDKIT=1
+
+Anything that isn't a script name runs as-is, e.g. `foam bash` for a shell or `foam python3 my_script.py`.
+
+On Linux, add `-u "$(id -u):$(id -g)"` so output files are owned by you rather than root.
+To run on another port, map it (`-p 9000:8080`). For two tools at once, give each its own port.
+
+URDF mesh paths are relative, so mount a folder that contains both the URDF and its meshes.
+
+## Developing foam
+
+Mount your checkout over `/foam` to run your local source instead of the baked-in copy.
+If the checkout has no compiled binaries, they're built on the first run:
+
+```bash
+docker run --rm -it -p 8080:8080 -v "$(pwd):/foam" -v "/path/to/robots:/data" foam bash
 ```
-
-To build the image, run:
-```docker build -t foam-image .```
-
-### Step 4: Running the docker container
-To run the docker container from the image, run
-```docker run -it -v "$(pwd)/:/foam"  --name=foam foam-image```
-
-To re-enter the docker container, run
-```docker exec -it foam /bin/bash```
-
-To start and stop a container, run
-```docker start foam```
-```docker stop foam```
-
-
-For more details on display forwarding and other docker management commands, see the following:
-https://github.com/saiccoumar/PX4_Docker_Config

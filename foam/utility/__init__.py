@@ -19,6 +19,8 @@ import numpy as np
 
 import xmltodict
 
+from ..model import Sphere
+
 
 def fix_mesh(mesh: Trimesh):
     fix_normals(mesh)
@@ -259,3 +261,43 @@ def set_urdf_spheres(urdf: URDFDict, spheres):
 def save_urdf(urdf: URDFDict, filename: Path):
     with open(filename, 'w') as f:
         f.write(xmltodict.unparse(urdf, pretty = True))
+
+
+def _as_list(value) -> list:
+    if value is None:
+        return []
+    return value if isinstance(value, list) else [value]
+
+
+def get_link_spheres(urdf: URDFDict) -> dict[str, list[Sphere]]:
+    link_spheres = {}
+    for link in _as_list(urdf['robot']['link']):
+        spheres = []
+        for collision in _as_list(link.get('collision')):
+            geometry = collision['geometry']
+            if 'sphere' in geometry:
+                xyz = _urdf_array_to_np(collision['origin']['@xyz']) if 'origin' in collision else np.zeros(3)
+                spheres.append(Sphere(*xyz, float(geometry['sphere']['@radius'])))
+
+        if spheres:
+            link_spheres[link['@name']] = spheres
+
+    return link_spheres
+
+
+def set_link_spheres(urdf: URDFDict, link_spheres: dict[str, list[Sphere]]):
+    """Replace the sphere collisions of every link in `link_spheres`, keeping any other collision geometry."""
+    for link in _as_list(urdf['robot']['link']):
+        if link['@name'] not in link_spheres:
+            continue
+
+        collision = [c for c in _as_list(link.get('collision')) if 'sphere' not in c['geometry']]
+        for sphere in link_spheres[link['@name']]:
+            collision.append(
+                {
+                    'geometry': {'sphere': {'@radius': sphere.radius}},
+                    'origin': {'@xyz': ' '.join(map(str, sphere.origin)), '@rpy': '0 0 0'},
+                    }
+                )
+
+        link['collision'] = collision

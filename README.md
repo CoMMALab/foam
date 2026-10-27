@@ -23,8 +23,12 @@ If you'd like to cite this work, please use the following and see the [associate
 ## Installation
 Foam can either be installed natively on linux/wsl or through a dockerized container. We recommend using the dockerized build for cleaner dependency management and resource utilization monitoring.
 
-## Building with Docker 
-Navigate to the [Docker quickstart](https://github.com/CoMMALab/foam/blob/master/DOCKER_QUICKSTART.md) for detailed instructions.
+## Building with Docker
+```bash
+docker build -t foam .
+docker run --rm -it -p 8080:8080 -v "$(pwd):/data" foam generate_sphere_urdf --filename robot.urdf
+```
+Any script below runs this way, browser tools included (open http://localhost:8080). See the [Docker quickstart](DOCKER_QUICKSTART.md).
 
 ## Installation with pixi
 
@@ -73,13 +77,20 @@ In the `scripts` directory:
   > Optionally specify `--manifold-leaves <leaves>` to control mesh correction on invalid meshes.
   
   > Takes urdfs as input rather than mesh formats.
-- `python visualize_spheres.py <mesh> <spheres>`: Visualizes spheres and mesh.
-  
-  > Specify `<mesh>` with the path to the original mesh file.
-  
-  > Optionally specify `<spheres>` to visualize the spherized approximation on top of the original mesh.
-  
-  > Optionally specify `--depth <depth>` for the sphere level to visualize.
+- `python generate_srdf.py <spherized urdf>`: Writes a MoveIt-style self-collision SRDF next to the URDF, computed from its spheres.
+
+  > Samples random configurations (`--n_samples`, default 10000) and disables link pairs that are `Adjacent`, collide at the `Default` (home) configuration, `Always` collide, or `Never` collide. Pairs that only sometimes collide stay enabled.
+
+  > Optionally specify `--contact_margin <m>` to treat spheres closer than this as colliding.
+
+### Interactive tools (browser, via [viser](https://viser.studio))
+
+Each of these prints a `http://localhost:8080` link (change with `--port`).
+
+- `python spherize_urdf_interactive.py <urdf>`: Tune the spherization method, depth, branching, preprocessing and per-link sphere budgets. Preview the spheres on the posed robot, step through tree levels, and export a spherized URDF.
+- `python edit_spheres.py <spherized urdf>`: Hand-edit spheres. Click a sphere to select it, drag the gizmo to move it, resize it with a slider, or delete it. **Save** writes back to the URDF (or to `--output <path>`).
+- `python visualize_urdf.py <urdf>`: View any URDF, including spherized ones, with joint sliders and toggles for the visual and collision geometry. Replaces the old PyBullet viewer.
+- `python visualize_spheres.py <mesh> <spheres>`: View a mesh with a `generate_spheres.py` JSON, with a slider to step through the tree levels.
 
 ## Third-party Dependencies
 

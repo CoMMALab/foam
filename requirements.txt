@@ -7,8 +7,8 @@ matplotlib==3.10.0
 numpy==2.2.2
 packaging==24.2
 pillow==11.1.0
-pyglet==1.5.31
-pybullet==3.1.7
+viser==1.1.1
+yourdfpy==0.0.60
 pyparsing==3.2.1
 python-dateutil==2.9.0.post0
 scipy==1.15.1

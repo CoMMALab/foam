@@ -265,3 +265,53 @@ class SpherizationHelper:
 
         else:
             return self.db.get(name, branch, depth)
+
+
+def _branch_for(mesh: Trimesh, branch: int, volume_heuristic_ratio: float) -> int:
+    from trimesh.nsphere import minimum_nsphere
+
+    center, radius = minimum_nsphere(mesh.vertices)
+    vr = TMSphere(radius, center).volume / mesh.volume
+    return min(int(vr * volume_heuristic_ratio), branch)
+
+
+def spherize_urdf(
+        urdf: URDFDict,
+        depth: int = 1,
+        branch: int = 8,
+        volume_heuristic_ratio: float = 0.7,
+        link_scale: dict[str, float] = {},
+        threads: int = 16,
+        shrinkage: float = 1.,
+        manifold_leaves: int = 1000,
+        simplification_ratio: float = 0.2,
+        **spherization_kwargs: Any,
+    ) -> dict[str, list[Spherization]]:
+    """Spherize every collision mesh/primitive of a URDF.
+
+    Returns {"link::mesh-or-primitive": [Spherization per level 0..depth]}, the keys `set_urdf_spheres` expects.
+    `link_scale` multiplies the per-link sphere budget.
+    """
+    ps = ParallelSpherizer(threads)
+    process_kwargs = {'manifold_leaves': manifold_leaves, 'ratio': simplification_ratio}
+    items = get_urdf_meshes(urdf, shrinkage) + get_urdf_primitives(urdf, shrinkage)
+    for item in items:
+        branch_value = _branch_for(item.mesh, branch, volume_heuristic_ratio)
+        link = item.name.split(":")[0]
+        if link in link_scale:
+            branch_value = int(link_scale[link] * branch_value)
+
+        print(f"Link::Mesh: {item.name}\n  Target Spheres: {branch_value}")
+        ps.spherize_mesh(
+            item.name,
+            item.mesh,
+            item.scale,
+            item.xyz,
+            item.rpy,
+            {'depth': depth, 'branch': branch_value, **spherization_kwargs},
+            process_kwargs,
+            )
+
+    ps.wait()
+    ps.executor.shutdown()
+    return {item.name: ps.get(item.name) for item in items}
